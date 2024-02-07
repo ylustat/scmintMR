@@ -22,7 +22,18 @@ res <- mintMR(gammah = example_data$gamma_hat,
               se2 = example_data$se_G,
               corr_mat = example_data$LD,
               reference = example_data$latent_status,
+              Lambda = Lambda,
               PC1 = 6)
+
+Q <- res$res$QRes %>% lapply(function(x) Reduce("+",x)/length(x))
+W <- res$res$WRes %>% lapply(function(x) Reduce("+",x)/length(x))
+P <- res$res$PRes %>% lapply(function(x) Reduce("+",x)/length(x))
+SKATp <- mapply(function(q,w) SKAT::Get_Davies_PVal(q, w)$p.value, Q, W, SIMPLIFY = F) %>% 
+  unlist()
+
+hist(SKATp[rowSums(example_data$latent_status)==0])
+hist(SKATp[rowSums(example_data$latent_status)>=1],breaks=20)
+mean(SKATp[rowSums(example_data$latent_status)>=1]<0.05)
 
 p <- data.frame(mintMR = as.vector(res$Pvalue))
 p %>% 

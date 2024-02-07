@@ -45,9 +45,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// SKAT_cpp
+List SKAT_cpp(const arma::vec& y, const arma::mat& Z);
+RcppExport SEXP _scmintMR_SKAT_cpp(SEXP ySEXP, SEXP ZSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Z(ZSEXP);
+    rcpp_result_gen = Rcpp::wrap(SKAT_cpp(y, Z));
+    return rcpp_result_gen;
+END_RCPP
+}
 // mintMR
-List mintMR(const List& gammah, const List& Gammah, const List& se1, const List& se2, Nullable<List> group, Nullable<List> opts, Nullable<arma::mat> reference, Nullable<List> corr_mat, Nullable<arma::mat> Lambda, int CC, int PC1, int PC2, bool display_progress);
-RcppExport SEXP _scmintMR_mintMR(SEXP gammahSEXP, SEXP GammahSEXP, SEXP se1SEXP, SEXP se2SEXP, SEXP groupSEXP, SEXP optsSEXP, SEXP referenceSEXP, SEXP corr_matSEXP, SEXP LambdaSEXP, SEXP CCSEXP, SEXP PC1SEXP, SEXP PC2SEXP, SEXP display_progressSEXP) {
+List mintMR(const List& gammah, const List& Gammah, const List& se1, const List& se2, Nullable<List> group, Nullable<List> opts, Nullable<List> corr_mat, Nullable<arma::mat> reference, Nullable<arma::mat> Lambda, int CC, int PC1, int PC2, bool display_progress);
+RcppExport SEXP _scmintMR_mintMR(SEXP gammahSEXP, SEXP GammahSEXP, SEXP se1SEXP, SEXP se2SEXP, SEXP groupSEXP, SEXP optsSEXP, SEXP corr_matSEXP, SEXP referenceSEXP, SEXP LambdaSEXP, SEXP CCSEXP, SEXP PC1SEXP, SEXP PC2SEXP, SEXP display_progressSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -57,14 +69,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const List& >::type se2(se2SEXP);
     Rcpp::traits::input_parameter< Nullable<List> >::type group(groupSEXP);
     Rcpp::traits::input_parameter< Nullable<List> >::type opts(optsSEXP);
-    Rcpp::traits::input_parameter< Nullable<arma::mat> >::type reference(referenceSEXP);
     Rcpp::traits::input_parameter< Nullable<List> >::type corr_mat(corr_matSEXP);
+    Rcpp::traits::input_parameter< Nullable<arma::mat> >::type reference(referenceSEXP);
     Rcpp::traits::input_parameter< Nullable<arma::mat> >::type Lambda(LambdaSEXP);
     Rcpp::traits::input_parameter< int >::type CC(CCSEXP);
     Rcpp::traits::input_parameter< int >::type PC1(PC1SEXP);
     Rcpp::traits::input_parameter< int >::type PC2(PC2SEXP);
     Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
-    rcpp_result_gen = Rcpp::wrap(mintMR(gammah, Gammah, se1, se2, group, opts, reference, corr_mat, Lambda, CC, PC1, PC2, display_progress));
+    rcpp_result_gen = Rcpp::wrap(mintMR(gammah, Gammah, se1, se2, group, opts, corr_mat, reference, Lambda, CC, PC1, PC2, display_progress));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -72,6 +84,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_scmintMR_get_opts", (DL_FUNC) &_scmintMR_get_opts, 12},
     {"_scmintMR_spca", (DL_FUNC) &_scmintMR_spca, 2},
+    {"_scmintMR_SKAT_cpp", (DL_FUNC) &_scmintMR_SKAT_cpp, 2},
     {"_scmintMR_mintMR", (DL_FUNC) &_scmintMR_mintMR, 13},
     {NULL, NULL, 0}
 };

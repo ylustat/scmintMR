@@ -141,10 +141,10 @@ vec sd_ignore_nan_inf(const mat& X) {
 }
 
 List summarize_result(const List& res) {
-  
   List beta0res = res["beta0res"];
   List DeltaRes = res["DeltaRes"];
   List omegaRes = res["omegaRes"];
+  
   int L = beta0res.size();
   int K = as<mat>(as<List>(as<List>(beta0res)[0])[0]).n_rows;
   
@@ -225,25 +225,27 @@ List spca(const arma::mat& x, const arma::mat& y) {
 Environment pkg2 = Environment::namespace_env("SKAT");
 Function Get_Davies_PVal = pkg2["Get_Davies_PVal"];
 // [[Rcpp::export]]
-List SKAT_cpp(const vec& y, const mat& Z) {
+List SKAT_cpp(const arma::vec& y, const arma::mat& Z) {
   // Calculate residuals as y - mean(y)
   vec resid = y - mean(y);
   double s2 = dot(resid, resid) / (resid.n_elem - 1);
-  
+
   // Compute Q.Temp as t(resid) %*% Z
   mat Q_Temp = resid.t() * Z;
-  
+
   // Compute Q
   mat Q = Q_Temp * Q_Temp.t() / s2 / 2;
-  
+
   // Construct X1 and calculate W.1
   mat X1 = ones<vec>(Z.n_rows);
   mat W_1 = Z.t() * Z - (Z.t() * X1) * inv(X1.t() * X1) * (X1.t() * Z);
-  
+
   // Placeholder for calling SKAT::Get_Davies_PVal or equivalent
   List out = Get_Davies_PVal(Q,W_1); // Needs replacement with the actual call or computation
-  
-  return out;
+
+  return List::create(Named("Q") = Q,
+                      Named("W") = W_1,
+                      Named("P") = out["p.value"]);
 }
 
 Environment pkg = Environment::namespace_env("CCA");
@@ -1068,7 +1070,7 @@ List mintMR_single_omics_supervised(const List &gammah, const List &Gammah,
   }
   
   int numsave = maxIter / thin + 1;
-  List Sgga2Res(L), Sgal2Res(L), Sgbeta2Res(L), Delta(L), beta0res(L), DeltaRes(L), omegaRes(L), mut(L), mu(L), mutRes(L), muRes(L), sgga2(L);
+  List Sgga2Res(L), Sgal2Res(L), Sgbeta2Res(L), Delta(L), beta0res(L), DeltaRes(L), omegaRes(L), mut(L), mu(L), mutRes(L), muRes(L), sgga2(L), QRes(L), WRes(L), PRes(L);
   List m0save(L), m1save(L);
   for (int i = 0; i < L; i++) {
     Delta[i] = vec(K, fill::zeros);
@@ -1090,6 +1092,9 @@ List mintMR_single_omics_supervised(const List &gammah, const List &Gammah,
     Sgbeta2Res[ell] = List(numsave);
     mutRes[ell] = List(numsave);
     muRes[ell] = List(numsave);
+    QRes[ell] = List(numsave);
+    WRes[ell] = List(numsave);
+    PRes[ell] = List(numsave);
     
     for (int l = 0; l < numsave; l++) {
       as<List>(beta0res[ell])[l] = vec(K, fill::ones);
@@ -1241,8 +1246,8 @@ List mintMR_single_omics_supervised(const List &gammah, const List &Gammah,
       // ----------------------- //
       // SKAT Test
       // ----------------------- //
-      
-      
+      mat mu_delta = as<mat>(mu[ell]);//*diagmat(as<mat>(Delta[ell]));
+      List SKAT_out = SKAT_cpp(Gammah[ell],mu_delta);
       
       
       // ----------------------- //
@@ -1282,6 +1287,9 @@ List mintMR_single_omics_supervised(const List &gammah, const List &Gammah,
       xi2[ell] =  1 / randg<double>(distr_param(taxi2, 1/tbxi2));
       sgal2xi2[ell] = sgal2[ell]*xi2[ell];
       
+      if(sgal2xi2[ell] < 1e-7){
+        sgal2xi2[ell] = 1e-7;
+      }
       // ----------------------- //
       // Update sgga2
       // ----------------------- //
@@ -1326,6 +1334,9 @@ List mintMR_single_omics_supervised(const List &gammah, const List &Gammah,
           as<List>(Sgbeta2Res[ell])[l] = sgbeta2[ell];
           as<List>(omegaRes[ell])[l] = omega[ell];
           as<List>(DeltaRes[ell])[l] = Delta[ell];
+          as<List>(QRes[ell])[l] = SKAT_out["Q"];
+          as<List>(WRes[ell])[l] = SKAT_out["W"];
+          as<List>(PRes[ell])[l] = SKAT_out["P"];
         }
       }
     }
@@ -1376,7 +1387,10 @@ List mintMR_single_omics_supervised(const List &gammah, const List &Gammah,
     _["omegaRes"] = omegaRes,
     _["DeltaRes"] = DeltaRes,
     _["mutRes"] = mutRes,
-    _["muRes"] = muRes
+    _["muRes"] = muRes,
+    _["QRes"] = QRes,
+    _["WRes"] = WRes,
+    _["PRes"] = PRes
   );
   return res;
 }
@@ -1386,22 +1400,22 @@ List mintMR_single_omics_supervised(const List &gammah, const List &Gammah,
 List mintMR(const List &gammah, const List &Gammah,
             const List &se1, const List &se2,
             Nullable<List> group = R_NilValue,
-            Nullable<List> opts = R_NilValue,//const List &opts,
-            Nullable<arma::mat> reference = R_NilValue,
+            Nullable<List> opts = R_NilValue,
             Nullable<List> corr_mat = R_NilValue,
+            Nullable<arma::mat> reference = R_NilValue,
             Nullable<arma::mat> Lambda = R_NilValue,
             int CC = 2, int PC1 = 1, int PC2 = 1,
             bool display_progress = true) {
   int L = gammah.size();
   List corr_mat_list(L), opts_list(L);
   bool overlapped = Lambda.isNotNull();
-  
+
   if (opts.isNull()) {
     opts_list = get_opts(L);
   } else {
     opts_list = as<List>(opts.get());
   }
-  
+
   if (corr_mat.isNull()) {
     for (int i = 0; i < L; ++i) {
       int n = as<mat>(gammah[i]).n_rows;
@@ -1410,7 +1424,7 @@ List mintMR(const List &gammah, const List &Gammah,
   } else {
     corr_mat_list = as<List>(corr_mat.get());
   }
-  
+
   List res, group_list;
 
   arma::mat lambda_mat;
@@ -1420,7 +1434,7 @@ List mintMR(const List &gammah, const List &Gammah,
     int n = as<mat>(gammah[0]).n_cols;
     lambda_mat = eye<mat>(n+1, n+1);
   }
-  
+
   if(reference.isNull()){
     if(group.isNull()){
       res= mintMR_single_omics(gammah, Gammah, se1, se2, corr_mat_list, opts_list, lambda_mat, display_progress, PC1);
@@ -1432,10 +1446,11 @@ List mintMR(const List &gammah, const List &Gammah,
     mat reference_m = as<mat>(reference.get());
     res = mintMR_single_omics_supervised(gammah, Gammah, se1, se2, reference_m, corr_mat_list, opts_list, lambda_mat, display_progress, PC1);
   }
-  
+
 
   List summary = summarize_result(res);
-  
-  return summary;
+  // return summary;
+  return List::create(Named("Pvalue") = summary["Pvalue"],
+                      Named("Estimate") = summary["Estimate"],
+                      Named("res") = res);
 }
-

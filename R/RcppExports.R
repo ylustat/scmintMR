@@ -9,7 +9,11 @@ spca <- function(x, y) {
     .Call(`_scmintMR_spca`, x, y)
 }
 
-mintMR <- function(gammah, Gammah, se1, se2, group = NULL, opts = NULL, reference = NULL, corr_mat = NULL, Lambda = NULL, CC = 2L, PC1 = 1L, PC2 = 1L, display_progress = TRUE) {
-    .Call(`_scmintMR_mintMR`, gammah, Gammah, se1, se2, group, opts, reference, corr_mat, Lambda, CC, PC1, PC2, display_progress)
+SKAT_cpp <- function(y, Z) {
+    .Call(`_scmintMR_SKAT_cpp`, y, Z)
+}
+
+mintMR <- function(gammah, Gammah, se1, se2, group = NULL, opts = NULL, corr_mat = NULL, reference = NULL, Lambda = NULL, CC = 2L, PC1 = 1L, PC2 = 1L, display_progress = TRUE) {
+    .Call(`_scmintMR_mintMR`, gammah, Gammah, se1, se2, group, opts, corr_mat, reference, Lambda, CC, PC1, PC2, display_progress)
 }
 
