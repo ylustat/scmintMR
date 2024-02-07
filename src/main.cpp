@@ -170,7 +170,7 @@ List summarize_result(const List& res) {
     }
     
     beta_est.elem(find(Delta_est == 0)).fill(datum::nan);
-    uvec nonzero = find(sum(Delta_est != 0, 0) > 0);
+    uvec nonzero = find(sum(Delta_est != 0, 0) > 1);
     if (nonzero.n_elem > 0) {
       rowvec beta_est_mean = mean_ignore_nan_inf(beta_est.cols(nonzero)).t();
       rowvec beta_est_sd = sd_ignore_nan_inf(beta_est.cols(nonzero)).t();
