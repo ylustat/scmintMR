@@ -34,7 +34,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // mintMR
-List mintMR(const List& gammah, const List& Gammah, const List& se1, const List& se2, const List group, Nullable<List> opts, Nullable<List> corr_mat, Nullable<arma::mat> Lambda, int CC, int PC1, int PC2, bool display_progress);
+List mintMR(const List& gammah, const List& Gammah, const List& se1, const List& se2, Nullable<List> group, Nullable<List> opts, Nullable<List> corr_mat, Nullable<arma::mat> Lambda, int CC, int PC1, int PC2, bool display_progress);
 RcppExport SEXP _scmintMR_mintMR(SEXP gammahSEXP, SEXP GammahSEXP, SEXP se1SEXP, SEXP se2SEXP, SEXP groupSEXP, SEXP optsSEXP, SEXP corr_matSEXP, SEXP LambdaSEXP, SEXP CCSEXP, SEXP PC1SEXP, SEXP PC2SEXP, SEXP display_progressSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -43,7 +43,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const List& >::type Gammah(GammahSEXP);
     Rcpp::traits::input_parameter< const List& >::type se1(se1SEXP);
     Rcpp::traits::input_parameter< const List& >::type se2(se2SEXP);
-    Rcpp::traits::input_parameter< const List >::type group(groupSEXP);
+    Rcpp::traits::input_parameter< Nullable<List> >::type group(groupSEXP);
     Rcpp::traits::input_parameter< Nullable<List> >::type opts(optsSEXP);
     Rcpp::traits::input_parameter< Nullable<List> >::type corr_mat(corr_matSEXP);
     Rcpp::traits::input_parameter< Nullable<arma::mat> >::type Lambda(LambdaSEXP);
