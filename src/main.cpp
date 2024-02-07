@@ -187,6 +187,41 @@ List summarize_result(const List& res) {
                       Named("Pvalue") = Pvalue);
 }
 
+
+Environment pkg1 = Environment::namespace_env("base");
+Function eigen = pkg1["eigen"];
+// [[Rcpp::export]]
+List spca(const arma::mat& x, const arma::mat& y) {
+  
+  int n = x.n_rows;
+  arma::mat H = arma::eye<mat>(n, n) - arma::ones<mat>(n, n) / n;
+  arma::mat L;
+  
+  if (y.n_elem == 0) { // Equivalent to checking if y is a diagonal matrix in R version
+    L = arma::eye<mat>(n, n);
+  } else {
+    L = y; // Directly using y if it's a matrix
+  }
+  
+  // Calculation of Q matrix
+  arma::mat Q = x.t() * H * L * H * x;
+  
+  // Eigen decomposition
+  List evd = Rcpp::as<List>(eigen(Q, true));
+  mat eigenvectors = evd["vectors"];
+  
+  // Optional return of transformed x
+  arma::mat x_transformed;
+  x_transformed = x * eigenvectors;
+  
+  // Setting column names for eigenvectors (not directly supported in Armadillo, handled at R level)
+  
+  return List::create(Named("vectors") = eigenvectors,
+                      Named("Q") = Q,
+                      Named("x") = x_transformed);
+}
+
+
 Environment pkg = Environment::namespace_env("CCA");
 Function cc = pkg["cc"];
 
@@ -955,6 +990,366 @@ List mintMR_single_omics(const List &gammah, const List &Gammah,
   );
   return res;
 }
+List mintMR_single_omics_supervised(const List &gammah, const List &Gammah,
+                                    const List &se1, const List &se2,
+                                    const mat &reference,
+                                    const List corr_mat, const List &opts,
+                                    const arma::mat &Lambda,
+                                    bool display_progress=true,
+                                    int PC1 = 1) {
+  int L = gammah.length();
+  int K = as<mat>(gammah[0]).n_cols;
+  IntegerVector p(L);
+  for (int i = 0; i < L; i++) {
+    p[i] = as<mat>(gammah[i]).n_rows;
+  }
+  mat Lambda_Offdiag = Lambda;
+  Lambda_Offdiag.diag().zeros();
+  
+  List corr_mat_Offdiag(L);
+  for (int i = 0; i < L; i++){
+    mat matrix = as<mat>(corr_mat[i]);
+    matrix.diag().zeros();
+    corr_mat_Offdiag[i] = matrix;
+  }
+  
+  
+  vec a_gamma = as<vec>(opts["a_gamma"]);
+  vec b_gamma = as<vec>(opts["b_gamma"]);
+  vec a_alpha = as<vec>(opts["a_alpha"]);
+  vec b_alpha = as<vec>(opts["b_alpha"]);
+  vec a_beta = as<vec>(opts["a_beta"]);
+  vec b_beta = as<vec>(opts["b_beta"]);
+  double aval = opts["a"];
+  double bval = opts["b"];
+  List a(L), b(L);
+  for (int i = 0; i < L; i++) {
+    a[i] = vec(K, fill::ones) * aval;
+    b[i] = vec(K, fill::ones) * bval;
+  }
+  double u0 = 0.1;
+  int maxIter = as<int>(opts["maxIter"]);
+  int thin = as<int>(opts["thin"]);
+  int burnin = as<int>(opts["burnin"]) - 1;
+  
+  vec sgal2 = vec(L, fill::ones) * 0.01;
+  vec sgbeta2 = vec(L, fill::ones) * 0.01;
+  vec xi2 = vec(L, fill::ones) * 0.01;
+  vec sgal2xi2 = sgal2 % xi2;
+  
+  List beta0(L), omega(L);
+  for (int i = 0; i < L; i++) {
+    beta0[i] = vec(K, fill::ones) * 0.1;
+    omega[i] = vec(K, fill::ones) * 0.1;
+  }
+  
+  int numsave = maxIter / thin + 1;
+  List Sgga2Res(L), Sgal2Res(L), Sgbeta2Res(L), Delta(L), beta0res(L), DeltaRes(L), omegaRes(L), mut(L), mu(L), mutRes(L), muRes(L), sgga2(L);
+  List m0save(L), m1save(L);
+  for (int i = 0; i < L; i++) {
+    Delta[i] = vec(K, fill::zeros);
+    mut[i] = vec(p[i], fill::ones) * 0.01;
+    mu[i] = mat(p[i], K, fill::ones) * 0.01;
+    
+    sgga2[i] = vec(p[i], fill::ones) * 0.01;
+    m0save[i] = mat(p[i], K, fill::ones) * 0.01;
+    m1save[i] = mat(p[i], K, fill::ones) * 0.01;
+  }
+  
+  
+  for (int ell = 0; ell < L; ell++) {
+    beta0res[ell] = List(numsave);
+    omegaRes[ell] = List(numsave);
+    DeltaRes[ell] = List(numsave);
+    Sgga2Res[ell] = List(numsave);
+    Sgal2Res[ell] = List(numsave);
+    Sgbeta2Res[ell] = List(numsave);
+    mutRes[ell] = List(numsave);
+    muRes[ell] = List(numsave);
+    
+    for (int l = 0; l < numsave; l++) {
+      as<List>(beta0res[ell])[l] = vec(K, fill::ones);
+      as<List>(omegaRes[ell])[l] = vec(K, fill::ones);
+      as<List>(DeltaRes[ell])[l] = vec(K, fill::ones);
+      as<List>(Sgga2Res[ell])[l] = vec(K, fill::ones);
+      as<List>(Sgal2Res[ell])[l] = 1;
+      as<List>(Sgbeta2Res[ell])[l] = 1;
+    }
+  }
+  
+  
+  List sG2(L), sg2(L), invsG2(L), invsg2(L);
+  for (int i = 0; i < L; i++) {
+    sG2[i] = as<mat>(se2[i]) % as<mat>(se2[i]);
+    sg2[i] = as<mat>(se1[i]) % as<mat>(se1[i]);
+    invsG2[i] = 1 / as<mat>(sG2[i]);
+    invsg2[i] = 1 / as<mat>(sg2[i]);
+  }
+  
+  List S_GRS_Ginv(L), S_gRS_ginv(L), S_GinvRS_Ginv(L), S_ginvRS_ginv(L), S_GRS_G(L), S_gRS_g(L);
+  
+  for (int i = 0; i < L; i++) {
+    vec se2_i = se2[i];
+    mat se1_i = se1[i];
+    mat corr_mat_i = as<mat>(corr_mat[i]);
+    
+    // calculate S_GRS_Ginv
+    mat S_GRS_Ginv_i = diagmat(se2_i) * corr_mat_i * diagmat(1/se2_i);
+    S_GRS_Ginv[i] = wrap(S_GRS_Ginv_i);
+    
+    // calculate S_gRS_ginv
+    List S_gRS_ginv_i(se1_i.n_cols);
+    for (int j = 0; j < se1_i.n_cols; j++) {
+      S_gRS_ginv_i[j] = diagmat(se1_i.col(j)) * corr_mat_i * diagmat(1/se1_i.col(j));
+    }
+    S_gRS_ginv[i] = wrap(S_gRS_ginv_i);
+    
+    // calculate S_GinvRS_Ginv
+    mat S_GinvRS_Ginv_i = diagmat(1/se2_i) * corr_mat_i * diagmat(1/se2_i);
+    S_GinvRS_Ginv[i] = wrap(S_GinvRS_Ginv_i);
+    
+    // calculate S_ginvRS_ginv
+    List S_ginvRS_ginv_i(se1_i.n_cols);
+    for (int j = 0; j < se1_i.n_cols; j++) {
+      S_ginvRS_ginv_i[j] = diagmat(1/se1_i.col(j)) * corr_mat_i * diagmat(1/se1_i.col(j));
+    }
+    S_ginvRS_ginv[i] = wrap(S_ginvRS_ginv_i);
+    
+    // calculate S_GRS_G
+    mat S_GRS_G_i = diagmat(se2_i) * corr_mat_i * diagmat(se2_i);
+    S_GRS_G[i] = wrap(S_GRS_G_i);
+    
+    // calculate S_gRS_g
+    List S_gRS_g_i(se1_i.n_cols);
+    for (int j = 0; j < se1_i.n_cols; j++) {
+      S_gRS_g_i[j] = diagmat(se1_i.col(j)) * corr_mat_i * diagmat(se1_i.col(j));
+    }
+    S_gRS_g[i] = wrap(S_gRS_g_i);
+  }
+  
+  
+  List I(L);
+  for (int i = 0; i < L; i++) {
+    int ptmp = p[i];
+    mat I_temp = eye<mat>(ptmp, ptmp);
+    I[i] = I_temp;
+  }
+  int l = 0;
+  int ell, iter;
+  Progress pgbar((maxIter + burnin), display_progress);
+  for (iter = 1; iter <= (maxIter + burnin); iter++) {
+    pgbar.increment();
+    if (Progress::check_abort()) {
+      List res = List::create(
+        _["beta0res"] = beta0res,
+        _["Sgga2Res"] = Sgga2Res,
+        _["Sgal2Res"] = Sgal2Res,
+        _["omegaRes"] = omegaRes,
+        _["DeltaRes"] = DeltaRes
+      );
+      return res;
+    }
+    
+    for (ell = 0; ell < L; ell++) {
+      vec invsgga2 = 1. / as<vec>(sgga2[ell]);
+      vec invsgal2xi2 = 1. / sgal2xi2;
+      
+      // ----------------------- //
+      // Parameters for Gamma
+      // ----------------------- //
+      mat v0t = inv(invsgal2xi2[ell] * as<mat>(I[ell]) + Lambda(0,0) * as<mat>(S_GinvRS_Ginv[ell]));
+      mat mut1 = (Lambda(0,0) * diagmat(1 / as<vec>(sG2[ell])) * as<mat>(Gammah[ell]) +
+        invsgal2xi2[ell] * (as<mat>(mu[ell]) * (as<mat>(Delta[ell]) % as<mat>(beta0[ell]))));
+      for (int k1 = 0; k1 < K; k1++) {
+        mut1 = mut1 + Lambda(0,k1+1) * diagmat(1 / as<mat>(se1[ell]).col(k1)) * diagmat(1 / as<mat>(se2[ell])) * as<mat>(gammah[ell]).col(k1);
+        mut1 = mut1 - Lambda(0,k1+1) * diagmat(1 / as<mat>(se1[ell]).col(k1)) * as<mat>(corr_mat[ell]) * diagmat(1 / as<mat>(se2[ell])) * as<mat>(mu[ell]).col(k1);
+      }
+      mut1 = v0t * mut1;
+      mat mut_ell = mvnrnd(mut1, v0t);
+      mut[ell] = mut_ell;
+      // ----------------------- //
+      // Parameters for gamma
+      // ----------------------- //
+      for (int k = 0; k < K; k++) {
+        mat v1t;
+        vec mut1;
+        v1t = inv(invsgga2[k] * as<mat>(I[ell]) + Lambda(k+1,k+1) * as<mat>(as<List>(S_ginvRS_ginv[ell])[k]) + as<mat>(Delta[ell])[k] * as<mat>(beta0[ell])[k] * as<mat>(beta0[ell])[k] * invsgal2xi2[ell] * as<mat>(I[ell]));
+        mut1 = as<mat>(Delta[ell])[k] * as<mat>(beta0[ell])[k] * invsgal2xi2[ell] * (as<mat>(mut[ell]) - sum(as<mat>(mu[ell]) * (as<mat>(Delta[ell]) % as<mat>(beta0[ell])), 1) + as<mat>(beta0[ell])[k] * as<mat>(mu[ell]).col(k)) +
+          Lambda(0,k+1) * diagmat(1 / as<mat>(se1[ell]).col(k)) * diagmat(1 / as<mat>(se2[ell])) * as<mat>(Gammah[ell])-
+          Lambda(0,k+1) * diagmat(1 / as<mat>(se1[ell]).col(k)) * as<mat>(corr_mat[ell]) * diagmat(1 / as<mat>(se2[ell])) * as<mat>(mut[ell]);
+        for (int k1 = 0; k1 < K; k1++) {
+          mut1 = mut1 + Lambda(k+1,k1+1) * diagmat(1 / as<mat>(se1[ell]).col(k)) * diagmat(1 / as<mat>(se1[ell]).col(k1)) * as<mat>(gammah[ell]).col(k1);
+          if(k1!=k){
+            mut1 = mut1 - Lambda(k+1,k1+1) * diagmat(1 / as<mat>(se1[ell]).col(k)) * as<mat>(corr_mat[ell]) * diagmat(1 / as<mat>(se1[ell]).col(k1)) * as<mat>(mu[ell]).col(k1);
+          }
+        }
+        mut1 = v1t * mut1;
+        mat mu_ell = as<mat>(mu[ell]);
+        mu_ell.col(k) = mvnrnd(mut1, v1t);
+        mu[ell] = mu_ell;
+      }
+      
+      // ----------------------- //
+      // Update Delta;
+      // ----------------------- //
+      double pr0, pr1, prob;
+      mat m0_ell = as<mat>(mu[ell]);
+      mat m1_ell = as<mat>(mu[ell]);
+      for (int k = 0; k < K; k++) {
+        vec m0 = as<mat>(mu[ell])*(as<mat>(Delta[ell]) % as<mat>(beta0[ell])) - as<mat>(Delta[ell])[k]*as<mat>(beta0[ell])[k]*as<mat>(mu[ell]).col(k) + as<mat>(beta0[ell])[k]*as<mat>(mu[ell]).col(k);
+        vec m1 = as<mat>(mu[ell])*(as<mat>(Delta[ell]) % as<mat>(beta0[ell])) - as<mat>(Delta[ell])[k]*as<mat>(beta0[ell])[k]*as<mat>(mu[ell]).col(k);
+        
+        pr0 = as<mat>(omega[ell])[k];
+        pr1 = (1 - as<mat>(omega[ell])[k]) *
+          exp(-0.5 * (accu((as<mat>(mut[ell]) - m1)%(as<mat>(mut[ell]) - m1)) -
+          accu((as<mat>(mut[ell]) - m0)%(as<mat>(mut[ell]) - m0))) / sgal2xi2[ell]);
+        
+        prob = pr0 / (pr0 + pr1);
+        vec Delta_ell = as<vec>(Delta[ell]);
+        Delta_ell[k] = R::rbinom(1, prob);
+        
+        Delta[ell] = Delta_ell;
+      }
+      
+      m0save[ell] = m0_ell;
+      m1save[ell] = m1_ell;
+      
+      
+      // ----------------------- //
+      // Update beta0, beta1;
+      // ----------------------- //
+      mat beta0_ell = as<mat>(beta0[ell]);
+      for (int k = 0; k < K; k++) {
+        if (as<mat>(Delta[ell])[k] == 1) {
+          double sig2b0t = 1 / (accu(as<mat>(mu[ell]).col(k) % as<mat>(mu[ell]).col(k)) / sgal2xi2[ell] + 1 / sgbeta2[ell]);
+          double mub0 = accu(as<mat>(mu[ell]).col(k) %
+                             (as<mat>(mut[ell]) - sum(as<mat>(mu[ell]) * diagmat(as<mat>(Delta[ell]) % beta0_ell),1) + as<mat>(Delta[ell])[k] * beta0_ell[k] * as<mat>(mu[ell]).col(k))) *
+                             invsgal2xi2[ell] * sig2b0t;
+          beta0_ell[k] = mub0 + randn() * sqrt(sig2b0t);
+        } else {
+          double sig2b0t = sgbeta2[ell];
+          beta0_ell[k] = randn() * sqrt(sig2b0t);
+        }
+      }
+      
+      
+      beta0[ell] = beta0_ell;
+      
+      // ----------------------- //
+      // Update sigma_alpha;
+      // ----------------------- //
+      double err0 = accu((as<mat>(mut[ell]) - sum(as<mat>(mu[ell]) * diagmat(as<mat>(Delta[ell]) % as<mat>(beta0[ell])),1)) % (as<mat>(mut[ell]) - sum(as<mat>(mu[ell]) * diagmat(as<mat>(Delta[ell]) % as<mat>(beta0[ell])),1)));
+      double ta_alpha = a_alpha[ell] + p[ell] / 2;
+      double tb_alpha = b_alpha[ell] + err0 / (2 * xi2[ell]);
+      
+      sgal2[ell] = 1 / randg<double>(distr_param(ta_alpha,1/tb_alpha));
+      
+      // ----------------------- //
+      // Update xi2
+      // ----------------------- //
+      double taxi2 = p[ell] / 2;
+      double tbxi2 = 0.5*accu(err0)/sgal2[ell];
+      xi2[ell] =  1 / randg<double>(distr_param(taxi2, 1/tbxi2));
+      sgal2xi2[ell] = sgal2[ell]*xi2[ell];
+      
+      // ----------------------- //
+      // Update sgga2
+      // ----------------------- //
+      double ta_gamma;
+      double tb_gamma;
+      ta_gamma = a_gamma[ell] + K * p[ell] / 2;
+      tb_gamma = b_gamma[ell] + accu(as<mat>(mu[ell])%as<mat>(mu[ell]))/2;
+      double sgga2_tmp = 1 / randg<double>(distr_param(ta_gamma, 1/tb_gamma));
+      
+      vec sgga2_ell = as<vec>(sgga2[ell]);
+      for (int k = 0; k < K; k++) {
+        sgga2_ell[k] = sgga2_tmp;
+      }
+      sgga2[ell] = sgga2_ell;
+      
+      // ----------------------- //
+      // Update sgbeta2
+      // ----------------------- //
+      double ta_beta = a_beta[ell] + K / 2;
+      double tb_beta = b_beta[ell] + accu(as<mat>(beta0[ell])%as<mat>(beta0[ell]))/2;
+      // sgbeta2[ell] = tb_beta/(ta_beta - 1);
+      sgbeta2[ell] = (1 / randg<double>(distr_param(ta_beta, 1/tb_beta)));
+      
+      // ----------------------- //
+      // Update omega
+      // ----------------------- //
+      for (int k = 0; k < K; k++) {
+        double at = as<mat>(a[ell])[k] + as<mat>(Delta[ell])[k];
+        double bt = as<mat>(b[ell])[k] + (1 - as<mat>(Delta[ell])[k]);
+        
+        mat omega_ell = as<mat>(omega[ell]);
+        
+        omega_ell[k] = R::rbeta(at,bt);
+        omega[ell] = omega_ell;
+      }
+      
+      if(iter >= (int)burnin){
+        if((iter - burnin) % thin == 0){
+          as<List>(beta0res[ell])[l] = beta0[ell];
+          as<List>(Sgga2Res[ell])[l] = sgga2[ell];
+          as<List>(Sgal2Res[ell])[l] = sgal2xi2[ell];
+          as<List>(Sgbeta2Res[ell])[l] = sgbeta2[ell];
+          as<List>(omegaRes[ell])[l] = omega[ell];
+          as<List>(DeltaRes[ell])[l] = Delta[ell];
+        }
+      }
+    }
+    
+    mat alpha_all = do_call_rbind_vecs(omega);
+    mat colmean_alpha = mean(alpha_all, 0);
+    
+    mat U1 = log(alpha_all / (1 - alpha_all)) - u0;
+    
+    U1 = up_truncate_matrix(U1);
+    U1 = low_truncate_matrix(U1);
+    
+    // perform supervised PCA
+    mat norm_U1 = normalize_mat(U1);
+    
+    mat colmean1 = mean(U1, 0);
+    mat sd1 = stddev(U1, 0, 0);
+
+    List spca_result;
+    spca_result = spca(norm_U1, reference*trans(reference));
+    
+    mat X_red1 = as<mat>(spca_result["x"]).cols(0, PC1 - 1) *
+      trans(as<mat>(spca_result["vectors"]).cols(0, PC1 - 1));
+    
+    X_red1 = X_red1 * diagmat(sd1);
+    for (int j = 0; j < X_red1.n_cols; j++) {
+      X_red1.col(j) += colmean1[j];
+    }
+    
+    for (int ell = 0; ell < L; ell++) {
+      mat current_omega;
+      current_omega = 1 / (1 + exp(-X_red1.row(ell) - u0));
+      omega[ell] = trans(current_omega);
+    }
+    
+    if(iter >= (int)burnin){
+      if((iter - burnin) % thin == 0){
+        l += 1;
+      }
+    }
+  }
+  
+  List res = List::create(
+    _["beta0res"] = beta0res,
+    _["Sgga2Res"] = Sgga2Res,
+    _["Sgal2Res"] = Sgal2Res,
+    _["Sgbeta2Res"] = Sgbeta2Res,
+    _["omegaRes"] = omegaRes,
+    _["DeltaRes"] = DeltaRes,
+    _["mutRes"] = mutRes,
+    _["muRes"] = muRes
+  );
+  return res;
+}
 
 
 // [[Rcpp::export]]
@@ -962,6 +1357,7 @@ List mintMR(const List &gammah, const List &Gammah,
             const List &se1, const List &se2,
             Nullable<List> group = R_NilValue,
             Nullable<List> opts = R_NilValue,//const List &opts,
+            Nullable<arma::mat> reference = R_NilValue,
             Nullable<List> corr_mat = R_NilValue,
             Nullable<arma::mat> Lambda = R_NilValue,
             int CC = 2, int PC1 = 1, int PC2 = 1,
@@ -986,27 +1382,28 @@ List mintMR(const List &gammah, const List &Gammah,
   }
   
   List res, group_list;
+
+  arma::mat lambda_mat;
+  if(overlapped){
+    lambda_mat = as<arma::mat>(Lambda.get());
+  } else {
+    int n = as<mat>(gammah[0]).n_cols;
+    lambda_mat = eye<mat>(n+1, n+1);
+  }
   
-  if(group.isNull()){
-    if(overlapped) {
-      arma::mat lambda_mat = as<arma::mat>(Lambda.get());
+  if(reference.isNull()){
+    if(group.isNull()){
       res= mintMR_single_omics(gammah, Gammah, se1, se2, corr_mat_list, opts_list, lambda_mat, display_progress, PC1);
     } else {
-      int n = as<mat>(gammah[0]).n_cols;
-      arma::mat lambda_mat = eye<mat>(n+1, n+1);
-      res= mintMR_single_omics(gammah, Gammah, se1, se2, corr_mat_list, opts_list, lambda_mat, display_progress, PC1);
+      group_list = as<List>(group.get());
+      res = mintMR_multi_omics(gammah, Gammah, se1, se2, corr_mat_list, group_list, opts_list, lambda_mat, display_progress, CC, PC1, PC2);
     }
   } else {
-    group_list = as<List>(group.get());
-    if(overlapped) {
-      arma::mat lambda_mat = as<arma::mat>(Lambda.get());
-      res = mintMR_multi_omics(gammah, Gammah, se1, se2, corr_mat_list, group_list, opts_list, lambda_mat, display_progress, CC, PC1, PC2);
-    } else {
-      int n = as<mat>(gammah[0]).n_cols;
-      arma::mat lambda_mat = eye<mat>(n+1, n+1);
-      res = mintMR_multi_omics(gammah, Gammah, se1, se2, corr_mat_list, group_list, opts_list, lambda_mat, display_progress, CC, PC1, PC2);
-    }
+    mat reference_m = as<mat>(reference.get());
+    res = mintMR_single_omics_supervised(gammah, Gammah, se1, se2, reference_m, corr_mat_list, opts_list, lambda_mat, display_progress, PC1);
   }
+  
+
   List summary = summarize_result(res);
   
   return summary;

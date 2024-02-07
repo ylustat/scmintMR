@@ -5,7 +5,11 @@ get_opts <- function(L, a_gamma = NULL, b_gamma = NULL, a_alpha = NULL, b_alpha 
     .Call(`_scmintMR_get_opts`, L, a_gamma, b_gamma, a_alpha, b_alpha, a_beta, b_beta, a, b, maxIter, thin, burnin)
 }
 
-mintMR <- function(gammah, Gammah, se1, se2, group = NULL, opts = NULL, corr_mat = NULL, Lambda = NULL, CC = 2L, PC1 = 1L, PC2 = 1L, display_progress = TRUE) {
-    .Call(`_scmintMR_mintMR`, gammah, Gammah, se1, se2, group, opts, corr_mat, Lambda, CC, PC1, PC2, display_progress)
+spca <- function(x, y) {
+    .Call(`_scmintMR_spca`, x, y)
+}
+
+mintMR <- function(gammah, Gammah, se1, se2, group = NULL, opts = NULL, reference = NULL, corr_mat = NULL, Lambda = NULL, CC = 2L, PC1 = 1L, PC2 = 1L, display_progress = TRUE) {
+    .Call(`_scmintMR_mintMR`, gammah, Gammah, se1, se2, group, opts, reference, corr_mat, Lambda, CC, PC1, PC2, display_progress)
 }
 
