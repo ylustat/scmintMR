@@ -159,7 +159,7 @@ List summarize_result(const List& res) {
     mat Delta_est = do_call_rbind_vecs(as<List>(DeltaRes[s]));
     mat omega_est = do_call_rbind_vecs(as<List>(omegaRes[s]));
     
-    uvec all_zero = find(sum(Delta_est != 0, 0) == 0);
+    uvec all_zero = find(sum(Delta_est != 0, 0) <= 1);
     if (all_zero.n_elem > 0) {
       rowvec beta_est_mean = mean(beta_est.cols(all_zero), 0);
       rowvec beta_est_sd = stddev(beta_est.cols(all_zero), 0, 0) / sqrt(beta_est.n_rows);
