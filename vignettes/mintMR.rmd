@@ -82,7 +82,8 @@ res <- mintMR(gammah = example_data$gamma_hat,
               Gammah = example_data$Gamma_hat,
               se1 = example_data$se_g,
               se2 = example_data$se_G,
-              corr_mat = example_data$LD,PC1 = 6)
+              corr_mat = example_data$LD,
+              group = group)
 ```
 When sample overlap information $\widehat{C}$ is available as a $(1+\sum_lK_l)\times(1+\sum_lK_l)$ matrix, it can be used in the function as
 ```{r, eval=FALSE}
