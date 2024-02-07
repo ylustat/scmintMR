@@ -222,6 +222,30 @@ List spca(const arma::mat& x, const arma::mat& y) {
 }
 
 
+Environment pkg2 = Environment::namespace_env("SKAT");
+Function Get_Davies_PVal = pkg2["Get_Davies_PVal"];
+// [[Rcpp::export]]
+List SKAT_cpp(const vec& y, const mat& Z) {
+  // Calculate residuals as y - mean(y)
+  vec resid = y - mean(y);
+  double s2 = dot(resid, resid) / (resid.n_elem - 1);
+  
+  // Compute Q.Temp as t(resid) %*% Z
+  mat Q_Temp = resid.t() * Z;
+  
+  // Compute Q
+  mat Q = Q_Temp * Q_Temp.t() / s2 / 2;
+  
+  // Construct X1 and calculate W.1
+  mat X1 = ones<vec>(Z.n_rows);
+  mat W_1 = Z.t() * Z - (Z.t() * X1) * inv(X1.t() * X1) * (X1.t() * Z);
+  
+  // Placeholder for calling SKAT::Get_Davies_PVal or equivalent
+  List out = Get_Davies_PVal(Q,W_1); // Needs replacement with the actual call or computation
+  
+  return out;
+}
+
 Environment pkg = Environment::namespace_env("CCA");
 Function cc = pkg["cc"];
 
@@ -1213,6 +1237,12 @@ List mintMR_single_omics_supervised(const List &gammah, const List &Gammah,
       
       m0save[ell] = m0_ell;
       m1save[ell] = m1_ell;
+      
+      // ----------------------- //
+      // SKAT Test
+      // ----------------------- //
+      
+      
       
       
       // ----------------------- //
