@@ -166,6 +166,7 @@ List summarize_result(const List& res) {
       vec pvals = 2 * (1 - normcdf(abs(beta_est_mean / beta_est_sd)).t());
       for (uword i = 0; i < all_zero.n_elem; ++i) {
         Pvalue(s, all_zero(i)) = pvals(i);
+        Estimate(s, all_zero(i)) = beta_est_mean[i];
       }
     }
     
@@ -177,9 +178,10 @@ List summarize_result(const List& res) {
       vec pvals = 2 * (1 - normcdf(abs(beta_est_mean / beta_est_sd)).t());
       for (uword i = 0; i < nonzero.n_elem; ++i) {
         Pvalue(s, nonzero(i)) = pvals(i);
+        Estimate(s, nonzero(i)) = beta_est_mean[i];
       }
     }
-    Estimate.row(s) = mean_ignore_nan_inf(beta_est).t();
+    
     // Prob.row(s) = mean(omega_est, 0);
     // Status.row(s) = mean(Delta_est, 0);
   }
@@ -1334,6 +1336,8 @@ List mintMR_single_omics_supervised(const List &gammah, const List &Gammah,
           as<List>(Sgbeta2Res[ell])[l] = sgbeta2[ell];
           as<List>(omegaRes[ell])[l] = omega[ell];
           as<List>(DeltaRes[ell])[l] = Delta[ell];
+          as<List>(mutRes[ell])[l] = mut[ell];
+          as<List>(muRes[ell])[l] = mu[ell];
           as<List>(QRes[ell])[l] = SKAT_out["Q"];
           as<List>(WRes[ell])[l] = SKAT_out["W"];
           as<List>(PRes[ell])[l] = SKAT_out["P"];

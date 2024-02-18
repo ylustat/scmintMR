@@ -24,16 +24,23 @@ res <- mintMR(gammah = example_data$gamma_hat,
               reference = example_data$latent_status,
               Lambda = Lambda,
               PC1 = 6)
-
+mut <- res$res$mutRes %>% lapply(function(x) Reduce("+",x)/length(x))
+mu <- res$res$muRes %>% lapply(function(x) Reduce("+",x)/length(x))
 Q <- res$res$QRes %>% lapply(function(x) Reduce("+",x)/length(x))
 W <- res$res$WRes %>% lapply(function(x) Reduce("+",x)/length(x))
 P <- res$res$PRes %>% lapply(function(x) Reduce("+",x)/length(x))
 SKATp <- mapply(function(q,w) SKAT::Get_Davies_PVal(q, w)$p.value, Q, W, SIMPLIFY = F) %>% 
   unlist()
+hist(SKATp)
+hist(mapply(function(y,x) SKAT_simple(y,x)$p.value,mut,mu))
+
 
 hist(SKATp[rowSums(example_data$latent_status)==0])
 hist(SKATp[rowSums(example_data$latent_status)>=1],breaks=20)
 mean(SKATp[rowSums(example_data$latent_status)>=1]<0.05)
+mean(mapply(function(y,x) SKAT_simple(y,x)$p.value,mut,mu)<0.05)
+
+
 
 p <- data.frame(mintMR = as.vector(res$Pvalue))
 p %>% 
