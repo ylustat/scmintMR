@@ -20,9 +20,9 @@ library(reticulate)
 library(MVL)
 library(scmintMR)
 
-python_path <- reticulate::py_discover_config()$python
+python_path <- py_discover_config()$python
 use_python(python_path)
-reticulate::source_python(paste0(system.file("python", package = "MVL", mustWork = TRUE),"/DeepCCA_base.py"))
+source_python(paste0(system.file("python", package = "MVL", mustWork = TRUE),"/DeepCCA_base.py"))
 ```
 
 
