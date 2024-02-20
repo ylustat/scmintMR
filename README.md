@@ -12,6 +12,20 @@ library(devtools)
 install_github("ylustat/scmintMR")
 ```
 
+To use the Deep learning algorithms and missing value imputation characteristics of mintMR, please do following steps first before applying the model to analyze data.
+
+```R
+library(reticulate)
+library(MVL)
+library(scmintMR)
+
+python_path <- reticulate::py_discover_config()$python
+use_python(python_path)
+reticulate::source_python(paste0(system.file("python", package = "MVL", mustWork = TRUE),"/DeepCCA_base.py"))
+```
+
+
+
 ### Additional notes
 
 If you encounter the following messages when installing this package on a server without admin access, please see the solutions below:
@@ -25,5 +39,4 @@ If you encounter the following messages when installing this package on a server
   ```
 
   Please follow instructions on this [page](https://vsoch.github.io/2013/install-r-packages-that-require-compilation-on-linux-without-sudo/).
-
 
