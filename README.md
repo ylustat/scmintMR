@@ -9,6 +9,7 @@ To install the development version of the `mintMR` package, please load the `dev
 
 ```
 library(devtools)
+install_github("ylustat/MVL")
 install_github("ylustat/scmintMR")
 ```
 
