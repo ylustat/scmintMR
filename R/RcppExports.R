@@ -5,6 +5,18 @@ get_opts <- function(L, a_gamma = NULL, b_gamma = NULL, a_alpha = NULL, b_alpha 
     .Call(`_scmintMR_get_opts`, L, a_gamma, b_gamma, a_alpha, b_alpha, a_beta, b_beta, a, b, maxIter, thin, burnin)
 }
 
+check_missing <- function(gammah) {
+    .Call(`_scmintMR_check_missing`, gammah)
+}
+
+generate_transformation_indicator <- function(gammah_elem) {
+    .Call(`_scmintMR_generate_transformation_indicator`, gammah_elem)
+}
+
+keep_nonmissing_column <- function(X) {
+    .Call(`_scmintMR_keep_nonmissing_column`, X)
+}
+
 spca <- function(x, y) {
     .Call(`_scmintMR_spca`, x, y)
 }
@@ -13,7 +25,19 @@ SKAT_cpp <- function(y, Z) {
     .Call(`_scmintMR_SKAT_cpp`, y, Z)
 }
 
-mintMR <- function(gammah, Gammah, se1, se2, group = NULL, opts = NULL, corr_mat = NULL, reference = NULL, Lambda = NULL, CC = 2L, PC1 = 1L, PC2 = 1L, display_progress = TRUE) {
-    .Call(`_scmintMR_mintMR`, gammah, Gammah, se1, se2, group, opts, corr_mat, reference, Lambda, CC, PC1, PC2, display_progress)
+cppMIDAS <- function(gammah) {
+    .Call(`_scmintMR_cppMIDAS`, gammah)
+}
+
+cppmissForest <- function(gammah) {
+    .Call(`_scmintMR_cppmissForest`, gammah)
+}
+
+mintMR_Impute_MVL <- function(gammah, Gammah, se1, se2, corr_mat, group, opts, Lambda, display_progress = TRUE, latent_dim = 2L, CC = 2L, PC1 = 1L, PC2 = 1L, missing_method = "missForest", mvl_method = "DVCCA", epochs = 5L) {
+    .Call(`_scmintMR_mintMR_Impute_MVL`, gammah, Gammah, se1, se2, corr_mat, group, opts, Lambda, display_progress, latent_dim, CC, PC1, PC2, missing_method, mvl_method, epochs)
+}
+
+mintMR <- function(gammah, Gammah, se1, se2, group = NULL, opts = NULL, corr_mat = NULL, reference = NULL, Lambda = NULL, CC = 2L, PC1 = 1L, PC2 = 1L, latent_dim = 2L, display_progress = TRUE, missing_method = "missForest", mvl_method = "DVCCA", epochs = 5L) {
+    .Call(`_scmintMR_mintMR`, gammah, Gammah, se1, se2, group, opts, corr_mat, reference, Lambda, CC, PC1, PC2, latent_dim, display_progress, missing_method, mvl_method, epochs)
 }
 

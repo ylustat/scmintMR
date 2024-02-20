@@ -33,6 +33,39 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// check_missing
+arma::mat check_missing(List gammah);
+RcppExport SEXP _scmintMR_check_missing(SEXP gammahSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type gammah(gammahSEXP);
+    rcpp_result_gen = Rcpp::wrap(check_missing(gammah));
+    return rcpp_result_gen;
+END_RCPP
+}
+// generate_transformation_indicator
+arma::mat generate_transformation_indicator(const arma::mat& gammah_elem);
+RcppExport SEXP _scmintMR_generate_transformation_indicator(SEXP gammah_elemSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type gammah_elem(gammah_elemSEXP);
+    rcpp_result_gen = Rcpp::wrap(generate_transformation_indicator(gammah_elem));
+    return rcpp_result_gen;
+END_RCPP
+}
+// keep_nonmissing_column
+arma::mat keep_nonmissing_column(const arma::mat& X);
+RcppExport SEXP _scmintMR_keep_nonmissing_column(SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(keep_nonmissing_column(X));
+    return rcpp_result_gen;
+END_RCPP
+}
 // spca
 List spca(const arma::mat& x, const arma::mat& y);
 RcppExport SEXP _scmintMR_spca(SEXP xSEXP, SEXP ySEXP) {
@@ -57,15 +90,63 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// mintMR
-List mintMR(const List& gammah, const List& Gammah, const List& se1, const List& se2, Nullable<List> group, Nullable<List> opts, Nullable<List> corr_mat, Nullable<arma::mat> reference, Nullable<arma::mat> Lambda, int CC, int PC1, int PC2, bool display_progress);
-RcppExport SEXP _scmintMR_mintMR(SEXP gammahSEXP, SEXP GammahSEXP, SEXP se1SEXP, SEXP se2SEXP, SEXP groupSEXP, SEXP optsSEXP, SEXP corr_matSEXP, SEXP referenceSEXP, SEXP LambdaSEXP, SEXP CCSEXP, SEXP PC1SEXP, SEXP PC2SEXP, SEXP display_progressSEXP) {
+// cppMIDAS
+arma::mat cppMIDAS(arma::mat& gammah);
+RcppExport SEXP _scmintMR_cppMIDAS(SEXP gammahSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const List& >::type gammah(gammahSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type gammah(gammahSEXP);
+    rcpp_result_gen = Rcpp::wrap(cppMIDAS(gammah));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cppmissForest
+arma::mat cppmissForest(arma::mat& gammah);
+RcppExport SEXP _scmintMR_cppmissForest(SEXP gammahSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type gammah(gammahSEXP);
+    rcpp_result_gen = Rcpp::wrap(cppmissForest(gammah));
+    return rcpp_result_gen;
+END_RCPP
+}
+// mintMR_Impute_MVL
+List mintMR_Impute_MVL(List& gammah, const List& Gammah, List& se1, const List& se2, const List corr_mat, const List group, const List& opts, const arma::mat& Lambda, bool display_progress, int latent_dim, int CC, int PC1, int PC2, String missing_method, String mvl_method, int epochs);
+RcppExport SEXP _scmintMR_mintMR_Impute_MVL(SEXP gammahSEXP, SEXP GammahSEXP, SEXP se1SEXP, SEXP se2SEXP, SEXP corr_matSEXP, SEXP groupSEXP, SEXP optsSEXP, SEXP LambdaSEXP, SEXP display_progressSEXP, SEXP latent_dimSEXP, SEXP CCSEXP, SEXP PC1SEXP, SEXP PC2SEXP, SEXP missing_methodSEXP, SEXP mvl_methodSEXP, SEXP epochsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List& >::type gammah(gammahSEXP);
     Rcpp::traits::input_parameter< const List& >::type Gammah(GammahSEXP);
-    Rcpp::traits::input_parameter< const List& >::type se1(se1SEXP);
+    Rcpp::traits::input_parameter< List& >::type se1(se1SEXP);
+    Rcpp::traits::input_parameter< const List& >::type se2(se2SEXP);
+    Rcpp::traits::input_parameter< const List >::type corr_mat(corr_matSEXP);
+    Rcpp::traits::input_parameter< const List >::type group(groupSEXP);
+    Rcpp::traits::input_parameter< const List& >::type opts(optsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Lambda(LambdaSEXP);
+    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
+    Rcpp::traits::input_parameter< int >::type latent_dim(latent_dimSEXP);
+    Rcpp::traits::input_parameter< int >::type CC(CCSEXP);
+    Rcpp::traits::input_parameter< int >::type PC1(PC1SEXP);
+    Rcpp::traits::input_parameter< int >::type PC2(PC2SEXP);
+    Rcpp::traits::input_parameter< String >::type missing_method(missing_methodSEXP);
+    Rcpp::traits::input_parameter< String >::type mvl_method(mvl_methodSEXP);
+    Rcpp::traits::input_parameter< int >::type epochs(epochsSEXP);
+    rcpp_result_gen = Rcpp::wrap(mintMR_Impute_MVL(gammah, Gammah, se1, se2, corr_mat, group, opts, Lambda, display_progress, latent_dim, CC, PC1, PC2, missing_method, mvl_method, epochs));
+    return rcpp_result_gen;
+END_RCPP
+}
+// mintMR
+List mintMR(List& gammah, const List& Gammah, List& se1, const List& se2, Nullable<List> group, Nullable<List> opts, Nullable<List> corr_mat, Nullable<arma::mat> reference, Nullable<arma::mat> Lambda, int CC, int PC1, int PC2, int latent_dim, bool display_progress, String missing_method, String mvl_method, int epochs);
+RcppExport SEXP _scmintMR_mintMR(SEXP gammahSEXP, SEXP GammahSEXP, SEXP se1SEXP, SEXP se2SEXP, SEXP groupSEXP, SEXP optsSEXP, SEXP corr_matSEXP, SEXP referenceSEXP, SEXP LambdaSEXP, SEXP CCSEXP, SEXP PC1SEXP, SEXP PC2SEXP, SEXP latent_dimSEXP, SEXP display_progressSEXP, SEXP missing_methodSEXP, SEXP mvl_methodSEXP, SEXP epochsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List& >::type gammah(gammahSEXP);
+    Rcpp::traits::input_parameter< const List& >::type Gammah(GammahSEXP);
+    Rcpp::traits::input_parameter< List& >::type se1(se1SEXP);
     Rcpp::traits::input_parameter< const List& >::type se2(se2SEXP);
     Rcpp::traits::input_parameter< Nullable<List> >::type group(groupSEXP);
     Rcpp::traits::input_parameter< Nullable<List> >::type opts(optsSEXP);
@@ -75,17 +156,27 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type CC(CCSEXP);
     Rcpp::traits::input_parameter< int >::type PC1(PC1SEXP);
     Rcpp::traits::input_parameter< int >::type PC2(PC2SEXP);
+    Rcpp::traits::input_parameter< int >::type latent_dim(latent_dimSEXP);
     Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
-    rcpp_result_gen = Rcpp::wrap(mintMR(gammah, Gammah, se1, se2, group, opts, corr_mat, reference, Lambda, CC, PC1, PC2, display_progress));
+    Rcpp::traits::input_parameter< String >::type missing_method(missing_methodSEXP);
+    Rcpp::traits::input_parameter< String >::type mvl_method(mvl_methodSEXP);
+    Rcpp::traits::input_parameter< int >::type epochs(epochsSEXP);
+    rcpp_result_gen = Rcpp::wrap(mintMR(gammah, Gammah, se1, se2, group, opts, corr_mat, reference, Lambda, CC, PC1, PC2, latent_dim, display_progress, missing_method, mvl_method, epochs));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_scmintMR_get_opts", (DL_FUNC) &_scmintMR_get_opts, 12},
+    {"_scmintMR_check_missing", (DL_FUNC) &_scmintMR_check_missing, 1},
+    {"_scmintMR_generate_transformation_indicator", (DL_FUNC) &_scmintMR_generate_transformation_indicator, 1},
+    {"_scmintMR_keep_nonmissing_column", (DL_FUNC) &_scmintMR_keep_nonmissing_column, 1},
     {"_scmintMR_spca", (DL_FUNC) &_scmintMR_spca, 2},
     {"_scmintMR_SKAT_cpp", (DL_FUNC) &_scmintMR_SKAT_cpp, 2},
-    {"_scmintMR_mintMR", (DL_FUNC) &_scmintMR_mintMR, 13},
+    {"_scmintMR_cppMIDAS", (DL_FUNC) &_scmintMR_cppMIDAS, 1},
+    {"_scmintMR_cppmissForest", (DL_FUNC) &_scmintMR_cppmissForest, 1},
+    {"_scmintMR_mintMR_Impute_MVL", (DL_FUNC) &_scmintMR_mintMR_Impute_MVL, 16},
+    {"_scmintMR_mintMR", (DL_FUNC) &_scmintMR_mintMR, 17},
     {NULL, NULL, 0}
 };
 
