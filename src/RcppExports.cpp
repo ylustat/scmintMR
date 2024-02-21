@@ -45,87 +45,87 @@ BEGIN_RCPP
 END_RCPP
 }
 // generate_transformation_indicator
-arma::mat generate_transformation_indicator(const arma::mat& gammah_elem);
+arma::mat generate_transformation_indicator(const arma::mat gammah_elem);
 RcppExport SEXP _scmintMR_generate_transformation_indicator(SEXP gammah_elemSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type gammah_elem(gammah_elemSEXP);
+    Rcpp::traits::input_parameter< const arma::mat >::type gammah_elem(gammah_elemSEXP);
     rcpp_result_gen = Rcpp::wrap(generate_transformation_indicator(gammah_elem));
     return rcpp_result_gen;
 END_RCPP
 }
 // keep_nonmissing_column
-arma::mat keep_nonmissing_column(const arma::mat& X);
+arma::mat keep_nonmissing_column(const arma::mat X);
 RcppExport SEXP _scmintMR_keep_nonmissing_column(SEXP XSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::mat >::type X(XSEXP);
     rcpp_result_gen = Rcpp::wrap(keep_nonmissing_column(X));
     return rcpp_result_gen;
 END_RCPP
 }
 // spca
-List spca(const arma::mat& x, const arma::mat& y);
+List spca(const arma::mat x, const arma::mat y);
 RcppExport SEXP _scmintMR_spca(SEXP xSEXP, SEXP ySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const arma::mat >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const arma::mat >::type y(ySEXP);
     rcpp_result_gen = Rcpp::wrap(spca(x, y));
     return rcpp_result_gen;
 END_RCPP
 }
 // SKAT_cpp
-List SKAT_cpp(const arma::vec& y, const arma::mat& Z);
+List SKAT_cpp(const arma::vec y, const arma::mat Z);
 RcppExport SEXP _scmintMR_SKAT_cpp(SEXP ySEXP, SEXP ZSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type y(ySEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< const arma::vec >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const arma::mat >::type Z(ZSEXP);
     rcpp_result_gen = Rcpp::wrap(SKAT_cpp(y, Z));
     return rcpp_result_gen;
 END_RCPP
 }
 // cppMIDAS
-arma::mat cppMIDAS(arma::mat& gammah);
+arma::mat cppMIDAS(arma::mat gammah);
 RcppExport SEXP _scmintMR_cppMIDAS(SEXP gammahSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat& >::type gammah(gammahSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type gammah(gammahSEXP);
     rcpp_result_gen = Rcpp::wrap(cppMIDAS(gammah));
     return rcpp_result_gen;
 END_RCPP
 }
 // cppmissForest
-arma::mat cppmissForest(arma::mat& gammah);
+arma::mat cppmissForest(arma::mat gammah);
 RcppExport SEXP _scmintMR_cppmissForest(SEXP gammahSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat& >::type gammah(gammahSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type gammah(gammahSEXP);
     rcpp_result_gen = Rcpp::wrap(cppmissForest(gammah));
     return rcpp_result_gen;
 END_RCPP
 }
 // mintMR_Impute_MVL
-List mintMR_Impute_MVL(List& gammah, const List& Gammah, List& se1, const List& se2, const List corr_mat, const List group, const List& opts, const arma::mat& Lambda, bool display_progress, int latent_dim, int CC, int PC1, int PC2, String missing_method, String mvl_method, int epochs);
+List mintMR_Impute_MVL(List gammah, const List Gammah, List se1, const List se2, const List corr_mat, const List group, const List opts, const arma::mat Lambda, bool display_progress, int latent_dim, int CC, int PC1, int PC2, String missing_method, String mvl_method, int epochs);
 RcppExport SEXP _scmintMR_mintMR_Impute_MVL(SEXP gammahSEXP, SEXP GammahSEXP, SEXP se1SEXP, SEXP se2SEXP, SEXP corr_matSEXP, SEXP groupSEXP, SEXP optsSEXP, SEXP LambdaSEXP, SEXP display_progressSEXP, SEXP latent_dimSEXP, SEXP CCSEXP, SEXP PC1SEXP, SEXP PC2SEXP, SEXP missing_methodSEXP, SEXP mvl_methodSEXP, SEXP epochsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List& >::type gammah(gammahSEXP);
-    Rcpp::traits::input_parameter< const List& >::type Gammah(GammahSEXP);
-    Rcpp::traits::input_parameter< List& >::type se1(se1SEXP);
-    Rcpp::traits::input_parameter< const List& >::type se2(se2SEXP);
+    Rcpp::traits::input_parameter< List >::type gammah(gammahSEXP);
+    Rcpp::traits::input_parameter< const List >::type Gammah(GammahSEXP);
+    Rcpp::traits::input_parameter< List >::type se1(se1SEXP);
+    Rcpp::traits::input_parameter< const List >::type se2(se2SEXP);
     Rcpp::traits::input_parameter< const List >::type corr_mat(corr_matSEXP);
     Rcpp::traits::input_parameter< const List >::type group(groupSEXP);
-    Rcpp::traits::input_parameter< const List& >::type opts(optsSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type Lambda(LambdaSEXP);
+    Rcpp::traits::input_parameter< const List >::type opts(optsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat >::type Lambda(LambdaSEXP);
     Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
     Rcpp::traits::input_parameter< int >::type latent_dim(latent_dimSEXP);
     Rcpp::traits::input_parameter< int >::type CC(CCSEXP);
@@ -139,15 +139,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // mintMR
-List mintMR(List& gammah, const List& Gammah, List& se1, const List& se2, Nullable<List> group, Nullable<List> opts, Nullable<List> corr_mat, Nullable<arma::mat> reference, Nullable<arma::mat> Lambda, int CC, int PC1, int PC2, int latent_dim, bool display_progress, String missing_method, String mvl_method, int epochs);
+List mintMR(List gammah, const List Gammah, List se1, const List se2, Nullable<List> group, Nullable<List> opts, Nullable<List> corr_mat, Nullable<arma::mat> reference, Nullable<arma::mat> Lambda, int CC, int PC1, int PC2, int latent_dim, bool display_progress, String missing_method, String mvl_method, int epochs);
 RcppExport SEXP _scmintMR_mintMR(SEXP gammahSEXP, SEXP GammahSEXP, SEXP se1SEXP, SEXP se2SEXP, SEXP groupSEXP, SEXP optsSEXP, SEXP corr_matSEXP, SEXP referenceSEXP, SEXP LambdaSEXP, SEXP CCSEXP, SEXP PC1SEXP, SEXP PC2SEXP, SEXP latent_dimSEXP, SEXP display_progressSEXP, SEXP missing_methodSEXP, SEXP mvl_methodSEXP, SEXP epochsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List& >::type gammah(gammahSEXP);
-    Rcpp::traits::input_parameter< const List& >::type Gammah(GammahSEXP);
-    Rcpp::traits::input_parameter< List& >::type se1(se1SEXP);
-    Rcpp::traits::input_parameter< const List& >::type se2(se2SEXP);
+    Rcpp::traits::input_parameter< List >::type gammah(gammahSEXP);
+    Rcpp::traits::input_parameter< const List >::type Gammah(GammahSEXP);
+    Rcpp::traits::input_parameter< List >::type se1(se1SEXP);
+    Rcpp::traits::input_parameter< const List >::type se2(se2SEXP);
     Rcpp::traits::input_parameter< Nullable<List> >::type group(groupSEXP);
     Rcpp::traits::input_parameter< Nullable<List> >::type opts(optsSEXP);
     Rcpp::traits::input_parameter< Nullable<List> >::type corr_mat(corr_matSEXP);

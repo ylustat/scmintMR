@@ -138,7 +138,7 @@ List get_opts(int L,
 }
 
 // [[Rcpp::depends(RcppArmadillo)]]
-vec mean_ignore_nan_inf(const mat& X) {
+vec mean_ignore_nan_inf(const mat X) {
   vec col_mean = zeros<vec>(X.n_cols);
   for (unsigned int j = 0; j < X.n_cols; ++j) {
     vec col = X.col(j);
@@ -151,7 +151,7 @@ vec mean_ignore_nan_inf(const mat& X) {
   }
   return col_mean;
 }
-vec sd_ignore_nan_inf(const mat& X) {
+vec sd_ignore_nan_inf(const mat X) {
   vec col_sd = zeros<vec>(X.n_cols);
   for (unsigned int j = 0; j < X.n_cols; ++j) {
     vec col = X.col(j);
@@ -165,7 +165,7 @@ vec sd_ignore_nan_inf(const mat& X) {
   return col_sd;
 }
 
-List summarize_result(const List& res) {
+List summarize_result(const List res) {
   List beta0res = res["beta0res"];
   List DeltaRes = res["DeltaRes"];
   List omegaRes = res["omegaRes"];
@@ -214,7 +214,7 @@ List summarize_result(const List& res) {
                       Named("Pvalue") = Pvalue);
 }
 
-rowvec check_missing_in_matrix(const mat& x) {
+rowvec check_missing_in_matrix(const mat x) {
   rowvec result(x.n_cols);
   for (unsigned int j = 0; j < x.n_cols; ++j) {
     // Use find_finite to get indices of all finite values in the column
@@ -252,7 +252,7 @@ colvec ei(int i, int n) {
 }
 
 // [[Rcpp::export]]
-arma::mat generate_transformation_indicator(const arma::mat& gammah_elem) {
+arma::mat generate_transformation_indicator(const arma::mat gammah_elem) {
   // Vector to hold indices of columns that are not entirely NA
   uvec not_all_na_cols_indices;
 
@@ -284,7 +284,7 @@ arma::mat generate_transformation_indicator(const arma::mat& gammah_elem) {
 }
 
 // [[Rcpp::export]]
-arma::mat keep_nonmissing_column(const arma::mat& X) {
+arma::mat keep_nonmissing_column(const arma::mat X) {
   // Initialize a vector to store indices of non-missing columns
   uvec non_missing_cols;
 
@@ -301,7 +301,7 @@ arma::mat keep_nonmissing_column(const arma::mat& X) {
 }
 
 // [[Rcpp::export]]
-List spca(const arma::mat& x, const arma::mat& y) {
+List spca(const arma::mat x, const arma::mat y) {
   
   int n = x.n_rows;
   arma::mat H = arma::eye<mat>(n, n) - arma::ones<mat>(n, n) / n;
@@ -332,7 +332,7 @@ List spca(const arma::mat& x, const arma::mat& y) {
 }
 
 // [[Rcpp::export]]
-List SKAT_cpp(const arma::vec& y, const arma::mat& Z) {
+List SKAT_cpp(const arma::vec y, const arma::mat Z) {
   // Calculate residuals as y - mean(y)
   vec resid = y - mean(y);
   double s2 = dot(resid, resid) / (resid.n_elem - 1);
@@ -356,7 +356,7 @@ List SKAT_cpp(const arma::vec& y, const arma::mat& Z) {
 }
 
 // [[Rcpp::export]]
-arma::mat cppMIDAS(arma::mat &gammah){
+arma::mat cppMIDAS(arma::mat gammah){
   List X_conv = convert(dataframe(gammah));
   List complete_data = complete(train(X_conv,Named("training_epochs")=100,Named("seed")=1),1);
   mat complete_data_mat = as<mat>(datamatrix(complete_data[0]));
@@ -364,17 +364,17 @@ arma::mat cppMIDAS(arma::mat &gammah){
 }
 
 // [[Rcpp::export]]
-arma::mat cppmissForest(arma::mat &gammah){
+arma::mat cppmissForest(arma::mat gammah){
   List res = missForest(gammah);
   mat complete_data_mat = as<mat>(res["ximp"]);
   return(complete_data_mat);
 }
 
 
-List mintMR_multi_omics(const List &gammah, const List &Gammah,
-                        const List &se1, const List &se2,
-                        const List corr_mat, const List group, const List &opts,
-                        const arma::mat &Lambda,
+List mintMR_multi_omics(const List gammah, const List Gammah,
+                        const List se1, const List se2,
+                        const List corr_mat, const List group, const List opts,
+                        const arma::mat Lambda,
                         bool display_progress=true,
                         int CC = 2, int PC1 = 1, int PC2 = 1) {
   int L = gammah.length();
@@ -776,10 +776,10 @@ List mintMR_multi_omics(const List &gammah, const List &Gammah,
   );
   return res;
 }
-List mintMR_single_omics(const List &gammah, const List &Gammah,
-                         const List &se1, const List &se2,
-                         const List corr_mat, const List &opts,
-                         const arma::mat &Lambda,
+List mintMR_single_omics(const List gammah, const List Gammah,
+                         const List se1, const List se2,
+                         const List corr_mat, const List opts,
+                         const arma::mat Lambda,
                          bool display_progress=true,
                          int PC1 = 1) {
   int L = gammah.length();
@@ -1135,11 +1135,11 @@ List mintMR_single_omics(const List &gammah, const List &Gammah,
   );
   return res;
 }
-List mintMR_single_omics_supervised(const List &gammah, const List &Gammah,
-                                    const List &se1, const List &se2,
-                                    const mat &reference,
-                                    const List corr_mat, const List &opts,
-                                    const arma::mat &Lambda,
+List mintMR_single_omics_supervised(const List gammah, const List Gammah,
+                                    const List se1, const List se2,
+                                    const mat reference,
+                                    const List corr_mat, const List opts,
+                                    const arma::mat Lambda,
                                     bool display_progress=true,
                                     int PC1 = 1) {
   int L = gammah.length();
@@ -1516,10 +1516,10 @@ List mintMR_single_omics_supervised(const List &gammah, const List &Gammah,
   return res;
 }
 // [[Rcpp::export]]
-List mintMR_Impute_MVL(List &gammah, const List &Gammah,
-                       List &se1, const List &se2,
-                       const List corr_mat, const List group, const List &opts,
-                       const arma::mat &Lambda,
+List mintMR_Impute_MVL(List gammah, const List Gammah,
+                       List se1, const List se2,
+                       const List corr_mat, const List group, const List opts,
+                       const arma::mat Lambda,
                        bool display_progress=true,
                        int latent_dim = 2,
                        int CC = 2, int PC1 = 1, int PC2 = 1,
@@ -1968,8 +1968,8 @@ List mintMR_Impute_MVL(List &gammah, const List &Gammah,
 
 
 // [[Rcpp::export]]
-List mintMR(List &gammah, const List &Gammah,
-            List &se1, const List &se2,
+List mintMR(List gammah, const List Gammah,
+            List se1, const List se2,
             Nullable<List> group = R_NilValue,
             Nullable<List> opts = R_NilValue,
             Nullable<List> corr_mat = R_NilValue,
