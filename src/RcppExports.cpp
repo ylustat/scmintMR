@@ -113,8 +113,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // mintMR_Impute_MVL
-List mintMR_Impute_MVL(List gammah, const List Gammah, List se1, const List se2, const List corr_mat, const List group, const List opts, const arma::mat Lambda, bool display_progress, int latent_dim, int CC, int PC1, int PC2, String missing_method, String mvl_method, int epochs);
-RcppExport SEXP _scmintMR_mintMR_Impute_MVL(SEXP gammahSEXP, SEXP GammahSEXP, SEXP se1SEXP, SEXP se2SEXP, SEXP corr_matSEXP, SEXP groupSEXP, SEXP optsSEXP, SEXP LambdaSEXP, SEXP display_progressSEXP, SEXP latent_dimSEXP, SEXP CCSEXP, SEXP PC1SEXP, SEXP PC2SEXP, SEXP missing_methodSEXP, SEXP mvl_methodSEXP, SEXP epochsSEXP) {
+List mintMR_Impute_MVL(List gammah, const List Gammah, List se1, const List se2, const List corr_mat, const List group, const List opts, const arma::mat Lambda, bool display_progress, int latent_dim, int CC, int PC1, int PC2, String missing_method, String mvl_method, int epochs, bool fast_impute);
+RcppExport SEXP _scmintMR_mintMR_Impute_MVL(SEXP gammahSEXP, SEXP GammahSEXP, SEXP se1SEXP, SEXP se2SEXP, SEXP corr_matSEXP, SEXP groupSEXP, SEXP optsSEXP, SEXP LambdaSEXP, SEXP display_progressSEXP, SEXP latent_dimSEXP, SEXP CCSEXP, SEXP PC1SEXP, SEXP PC2SEXP, SEXP missing_methodSEXP, SEXP mvl_methodSEXP, SEXP epochsSEXP, SEXP fast_imputeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -134,7 +134,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< String >::type missing_method(missing_methodSEXP);
     Rcpp::traits::input_parameter< String >::type mvl_method(mvl_methodSEXP);
     Rcpp::traits::input_parameter< int >::type epochs(epochsSEXP);
-    rcpp_result_gen = Rcpp::wrap(mintMR_Impute_MVL(gammah, Gammah, se1, se2, corr_mat, group, opts, Lambda, display_progress, latent_dim, CC, PC1, PC2, missing_method, mvl_method, epochs));
+    Rcpp::traits::input_parameter< bool >::type fast_impute(fast_imputeSEXP);
+    rcpp_result_gen = Rcpp::wrap(mintMR_Impute_MVL(gammah, Gammah, se1, se2, corr_mat, group, opts, Lambda, display_progress, latent_dim, CC, PC1, PC2, missing_method, mvl_method, epochs, fast_impute));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -175,7 +176,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_scmintMR_SKAT_cpp", (DL_FUNC) &_scmintMR_SKAT_cpp, 2},
     {"_scmintMR_cppMIDAS", (DL_FUNC) &_scmintMR_cppMIDAS, 1},
     {"_scmintMR_cppmissForest", (DL_FUNC) &_scmintMR_cppmissForest, 1},
-    {"_scmintMR_mintMR_Impute_MVL", (DL_FUNC) &_scmintMR_mintMR_Impute_MVL, 16},
+    {"_scmintMR_mintMR_Impute_MVL", (DL_FUNC) &_scmintMR_mintMR_Impute_MVL, 17},
     {"_scmintMR_mintMR", (DL_FUNC) &_scmintMR_mintMR, 17},
     {NULL, NULL, 0}
 };

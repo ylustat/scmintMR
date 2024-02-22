@@ -1533,7 +1533,8 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
                        int CC = 2, int PC1 = 1, int PC2 = 1,
                        String missing_method = "missForest", // Added parameter for missing value handling
                        String mvl_method = "DVCCA",
-                       int epochs = 5) {
+                       int epochs = 5,
+                       bool fast_impute = true) {
   cout << "Now running mintMR_Impute_MVL ..." << endl;
 
   int L = gammah.length();
@@ -1545,7 +1546,7 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
   }
   mat Lambda_Offdiag = Lambda;
   Lambda_Offdiag.diag().zeros();
-  
+
   List corr_mat_Offdiag(L);
   for (int i = 0; i < L; i++){
     mat matrix = as<mat>(corr_mat[i]);
@@ -1900,16 +1901,27 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
     // cout << iter << endl;
     // cout << "Start imputation ..." << endl;
     if(missing_method == "MIDAS") {
-      if(iter <= 10) {
-        U = cppMIDAS(U);
-        U_complete = U;
+      if(fast_impute) {
+        if(iter <= 1) {
+          U = cppMIDAS(U);
+          U_complete = U;
+        } else {
+          U = as<mat>(fillNA(U,U_complete));
+        }
       } else {
-        U = as<mat>(fillNA(U,U_complete));
+        U = cppMIDAS(U);
       }
-      // U = as<mat>(fillmean(U));
-      
     } else if (missing_method == "missForest") {
-      U = cppmissForest(U);
+      if(fast_impute) {
+        if(iter <= 1) {
+          U = cppmissForest(U);
+          U_complete = U;
+        } else {
+          U = as<mat>(fillNA(U,U_complete));
+        }
+      } else {
+        U = cppmissForest(U);
+      }
     }
     // cout << U << endl;
     // cout << "End imputation ..." << endl;

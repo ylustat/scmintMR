@@ -33,8 +33,8 @@ cppmissForest <- function(gammah) {
     .Call(`_scmintMR_cppmissForest`, gammah)
 }
 
-mintMR_Impute_MVL <- function(gammah, Gammah, se1, se2, corr_mat, group, opts, Lambda, display_progress = TRUE, latent_dim = 2L, CC = 2L, PC1 = 1L, PC2 = 1L, missing_method = "missForest", mvl_method = "DVCCA", epochs = 5L) {
-    .Call(`_scmintMR_mintMR_Impute_MVL`, gammah, Gammah, se1, se2, corr_mat, group, opts, Lambda, display_progress, latent_dim, CC, PC1, PC2, missing_method, mvl_method, epochs)
+mintMR_Impute_MVL <- function(gammah, Gammah, se1, se2, corr_mat, group, opts, Lambda, display_progress = TRUE, latent_dim = 2L, CC = 2L, PC1 = 1L, PC2 = 1L, missing_method = "missForest", mvl_method = "DVCCA", epochs = 5L, fast_impute = TRUE) {
+    .Call(`_scmintMR_mintMR_Impute_MVL`, gammah, Gammah, se1, se2, corr_mat, group, opts, Lambda, display_progress, latent_dim, CC, PC1, PC2, missing_method, mvl_method, epochs, fast_impute)
 }
 
 mintMR <- function(gammah, Gammah, se1, se2, group = NULL, opts = NULL, corr_mat = NULL, reference = NULL, Lambda = NULL, CC = 2L, PC1 = 1L, PC2 = 1L, latent_dim = 2L, display_progress = TRUE, missing_method = "missForest", mvl_method = "DVCCA", epochs = 5L) {
