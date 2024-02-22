@@ -21,8 +21,8 @@ spca <- function(x, y) {
     .Call(`_scmintMR_spca`, x, y)
 }
 
-SKAT_cpp <- function(y, Z) {
-    .Call(`_scmintMR_SKAT_cpp`, y, Z)
+VarCompTest_cpp <- function(y, Z) {
+    .Call(`_scmintMR_VarCompTest_cpp`, y, Z)
 }
 
 cppMIDAS <- function(gammah) {

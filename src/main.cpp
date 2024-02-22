@@ -44,6 +44,8 @@ Function DeepCCA = pkgMVL["DeepCCA"];
 Function MIDAS = pkgMVL["MIDAS"];
 Function fillNA = pkgMVL["fillNA"];
 Function fillmean = pkgMVL["fillmean"];
+Function vc_test = pkgMVL["variance_component_test"];
+
 
 arma::mat normalize_mat(arma::mat X) {
   int p = X.n_cols;
@@ -334,7 +336,7 @@ List spca(const arma::mat x, const arma::mat y) {
 }
 
 // [[Rcpp::export]]
-List SKAT_cpp(const arma::vec y, const arma::mat Z) {
+List VarCompTest_cpp(const arma::vec y, const arma::mat Z) {
   // Calculate residuals as y - mean(y)
   vec resid = y - mean(y);
   double s2 = dot(resid, resid) / (resid.n_elem - 1);
@@ -1371,10 +1373,10 @@ List mintMR_single_omics_supervised(const List gammah, const List Gammah,
       m1save[ell] = m1_ell;
       
       // ----------------------- //
-      // SKAT Test
+      // VarCompTest Test
       // ----------------------- //
       mat mu_delta = as<mat>(mu[ell]);//*diagmat(as<mat>(Delta[ell]));
-      List SKAT_out = SKAT_cpp(Gammah[ell],mu_delta);
+      List VarCompTest_out = VarCompTest_cpp(Gammah[ell],mu_delta);
       
       
       // ----------------------- //
@@ -1463,9 +1465,9 @@ List mintMR_single_omics_supervised(const List gammah, const List Gammah,
           as<List>(DeltaRes[ell])[l] = Delta[ell];
           as<List>(mutRes[ell])[l] = mut[ell];
           as<List>(muRes[ell])[l] = mu[ell];
-          as<List>(QRes[ell])[l] = SKAT_out["Q"];
-          as<List>(WRes[ell])[l] = SKAT_out["W"];
-          as<List>(PRes[ell])[l] = SKAT_out["P"];
+          as<List>(QRes[ell])[l] = VarCompTest_out["Q"];
+          as<List>(WRes[ell])[l] = VarCompTest_out["W"];
+          as<List>(PRes[ell])[l] = VarCompTest_out["P"];
         }
       }
     }
@@ -1599,7 +1601,7 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
     omega[i] = vec(K[i], fill::ones) * 0.1;
   }
   int numsave = maxIter / thin + 1;
-  List Sgga2Res(L), Sgal2Res(L), Sgbeta2Res(L), Delta(L), beta0res(L), DeltaRes(L), omegaRes(L), mut(L), mu(L), mutRes(L), muRes(L), sgga2(L);
+  List Sgga2Res(L), Sgal2Res(L), Sgbeta2Res(L), Delta(L), beta0res(L), DeltaRes(L), omegaRes(L), mut(L), mu(L), mutRes(L), muRes(L), sgga2(L), QRes(L), WRes(L), PRes(L);
   List m0save(L), m1save(L);
   for (int i = 0; i < L; i++) {
     Delta[i] = vec(K[i], fill::zeros);
@@ -1621,6 +1623,9 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
     Sgbeta2Res[ell] = List(numsave);
     mutRes[ell] = List(numsave);
     muRes[ell] = List(numsave);
+    QRes[ell] = List(numsave);
+    WRes[ell] = List(numsave);
+    PRes[ell] = List(numsave);
     
     for (int l = 0; l < numsave; l++) {
       as<List>(beta0res[ell])[l] = vec(K[ell], fill::ones);
@@ -1777,6 +1782,11 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
       
       m0save[ell] = m0_ell;
       m1save[ell] = m1_ell;
+      // ----------------------- //
+      // VarCompTest Test
+      // ----------------------- //
+      mat mu_delta = as<mat>(mu[ell]);
+      List VarCompTest_out = VarCompTest_cpp(Gammah[ell],mu_delta);
       
       // ----------------------- //
       // Update beta0, beta1;
@@ -1881,6 +1891,11 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
           as<List>(Sgbeta2Res[ell])[l] = sgbeta2[ell];
           as<List>(omegaRes[ell])[l] = as<mat>(transformation_indicator[ell]) * as<mat>(omega[ell]);
           as<List>(DeltaRes[ell])[l] = as<mat>(transformation_indicator[ell]) * as<mat>(Delta[ell]);
+          as<List>(mutRes[ell])[l] = mut[ell];
+          as<List>(muRes[ell])[l] = mu[ell];
+          as<List>(QRes[ell])[l] = VarCompTest_out["Q"];
+          as<List>(WRes[ell])[l] = VarCompTest_out["W"];
+          as<List>(PRes[ell])[l] = VarCompTest_out["P"];
         }
       }
     }
@@ -2000,7 +2015,10 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
     _["omegaRes"] = omegaRes,
     _["DeltaRes"] = DeltaRes,
     _["mutRes"] = mutRes,
-    _["muRes"] = muRes
+    _["muRes"] = muRes,
+    _["QRes"] = QRes,
+    _["WRes"] = WRes,
+    _["PRes"] = PRes
   );
   return res;
 }
@@ -2077,9 +2095,11 @@ List mintMR(List gammah, const List Gammah,
   }
 
 
+  List VCP = vc_test(res);
   List summary = summarize_result(res);
   // return summary;
   return List::create(Named("Pvalue") = summary["Pvalue"],
                       Named("Estimate") = summary["Estimate"],
+                                                 Named("VCP") = VCP,   
                                                  Named("res") = res);
 }

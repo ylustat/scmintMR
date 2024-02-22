@@ -78,15 +78,15 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// SKAT_cpp
-List SKAT_cpp(const arma::vec y, const arma::mat Z);
-RcppExport SEXP _scmintMR_SKAT_cpp(SEXP ySEXP, SEXP ZSEXP) {
+// VarCompTest_cpp
+List VarCompTest_cpp(const arma::vec y, const arma::mat Z);
+RcppExport SEXP _scmintMR_VarCompTest_cpp(SEXP ySEXP, SEXP ZSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::vec >::type y(ySEXP);
     Rcpp::traits::input_parameter< const arma::mat >::type Z(ZSEXP);
-    rcpp_result_gen = Rcpp::wrap(SKAT_cpp(y, Z));
+    rcpp_result_gen = Rcpp::wrap(VarCompTest_cpp(y, Z));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -173,7 +173,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_scmintMR_generate_transformation_indicator", (DL_FUNC) &_scmintMR_generate_transformation_indicator, 1},
     {"_scmintMR_keep_nonmissing_column", (DL_FUNC) &_scmintMR_keep_nonmissing_column, 1},
     {"_scmintMR_spca", (DL_FUNC) &_scmintMR_spca, 2},
-    {"_scmintMR_SKAT_cpp", (DL_FUNC) &_scmintMR_SKAT_cpp, 2},
+    {"_scmintMR_VarCompTest_cpp", (DL_FUNC) &_scmintMR_VarCompTest_cpp, 2},
     {"_scmintMR_cppMIDAS", (DL_FUNC) &_scmintMR_cppMIDAS, 1},
     {"_scmintMR_cppmissForest", (DL_FUNC) &_scmintMR_cppmissForest, 1},
     {"_scmintMR_mintMR_Impute_MVL", (DL_FUNC) &_scmintMR_mintMR_Impute_MVL, 17},
