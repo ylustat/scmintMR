@@ -1900,7 +1900,7 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
     // cout << iter << endl;
     // cout << "Start imputation ..." << endl;
     if(missing_method == "MIDAS") {
-      if(iter <= 1e2) {
+      if(iter <= 10) {
         U = cppMIDAS(U);
         U_complete = U;
       } else {
