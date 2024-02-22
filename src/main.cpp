@@ -41,6 +41,7 @@ Function datamatrix = pkgBase["data.matrix"];
 
 Environment pkgMVL = Environment::namespace_env("MVL");
 Function DeepCCA = pkgMVL["DeepCCA"];
+Function MIDAS = pkgMVL["MIDAS"];
 
 
 arma::mat normalize_mat(arma::mat X) {
@@ -355,11 +356,17 @@ List SKAT_cpp(const arma::vec y, const arma::mat Z) {
                       Named("P") = out["p.value"]);
 }
 
+// // [[Rcpp::export]]
+// arma::mat cppMIDAS(arma::mat gammah){
+//   List X_conv = convert(dataframe(gammah));
+//   List complete_data = complete(train(X_conv,Named("training_epochs")=20,Named("seed")=1),1);
+//   mat complete_data_mat = as<mat>(datamatrix(complete_data[0]));
+//   return(complete_data_mat);
+// }
+
 // [[Rcpp::export]]
 arma::mat cppMIDAS(arma::mat gammah){
-  List X_conv = convert(dataframe(gammah));
-  List complete_data = complete(train(X_conv,Named("training_epochs")=100,Named("seed")=1),1);
-  mat complete_data_mat = as<mat>(datamatrix(complete_data[0]));
+  mat complete_data_mat = as<mat>(MIDAS(gammah));
   return(complete_data_mat);
 }
 
@@ -1879,18 +1886,19 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
     mat missing_status = U;
     missing_status = missing_status * 0 + 1;
     
+    cout << iter << endl;
+    cout << "Start imputation ..." << endl;
     if(missing_method == "MIDAS") {
       U = cppMIDAS(U);
     } else if (missing_method == "missForest") {
       U = cppmissForest(U);
     }
-    
+    cout << "End imputation ..." << endl;
 
     // MVL
     // split for MVL
     mat U1 = U.cols(as<uvec>(group[0]) - 1);
     mat U2 = U.cols(as<uvec>(group[1]) - 1);
-
     if (mvl_method == "CCAPCA"){
       List ccas = Rcpp::as<List>(cc(U1, U2));
       mat Ahat = ccas["xcoef"];
