@@ -1805,7 +1805,7 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
         }
       }
       
-      // cout << "beta0_ell -- " << beta0_ell << endl;
+      cout << "beta0_ell -- " << beta0_ell << endl;
       beta0[ell] = beta0_ell;
       // ----------------------- //
       // Update sigma_alpha;
@@ -1813,8 +1813,8 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
       double err0 = accu((as<mat>(mut[ell]) - sum(as<mat>(mu[ell]) * diagmat(as<mat>(Delta[ell]) % as<mat>(beta0[ell])),1)) % (as<mat>(mut[ell]) - sum(as<mat>(mu[ell]) * diagmat(as<mat>(Delta[ell]) % as<mat>(beta0[ell])),1)));
       double ta_alpha = a_alpha[ell] + p[ell] / 2;
       double tb_alpha = b_alpha[ell] + err0 / (2 * xi2[ell]);
-      // cout << "ta_alpha -- " << ta_alpha << endl;
-      // cout << "tb_alpha -- " << ta_alpha << endl;
+      cout << "ta_alpha -- " << ta_alpha << endl;
+      cout << "tb_alpha -- " << ta_alpha << endl;
       sgal2[ell] = 1 / randg<double>(distr_param(ta_alpha,1/tb_alpha));
       // ----------------------- //
       // Update xi2
@@ -1841,14 +1841,14 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
       int K1 = as<uvec>(group[0]).n_elem;
       ta_gamma = a_gamma[ell] + group0.size() * p[ell] / 2;
       tb_gamma = b_gamma[ell] + accu(as<mat>(mu[ell]).cols(group0)%as<mat>(mu[ell]).cols(group0))/2;
-      // cout << "ta_gamma -- " << ta_gamma << endl;
-      // cout << "tb_gamma -- " << tb_gamma << endl;
+      cout << "ta_gamma -- " << ta_gamma << endl;
+      cout << "tb_gamma -- " << tb_gamma << endl;
       double sgga2_grp1 = 1 / randg<double>(distr_param(ta_gamma, 1/tb_gamma));
       int K2 = as<uvec>(group[1]).n_elem;
       ta_gamma = a_gamma[ell] + group1.size() * p[ell] / 2;
       tb_gamma = b_gamma[ell] + accu(as<mat>(mu[ell]).cols(group1)%as<mat>(mu[ell]).cols(group1))/2;
-      // cout << "ta_gamma -- " << ta_gamma << endl;
-      // cout << "tb_gamma -- " << tb_gamma << endl;
+      cout << "ta_gamma -- " << ta_gamma << endl;
+      cout << "tb_gamma -- " << tb_gamma << endl;
       double sgga2_grp2 = 1 / randg<double>(distr_param(ta_gamma, 1/tb_gamma));
       vec sgga2_ell = as<vec>(sgga2[ell]);
       for (int k = 0; k < K1; k++) {
@@ -1865,8 +1865,8 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
       double ta_beta = a_beta[ell] + K[ell] / 2;
       double tb_beta = b_beta[ell] + accu(as<mat>(beta0[ell])%as<mat>(beta0[ell]))/2;
       // // sgbeta2[ell] = tb_beta/(ta_beta - 1);
-      // cout << "ta_beta -- " << ta_beta << endl;
-      // cout << "tb_beta -- " << tb_beta << endl;
+      cout << "ta_beta -- " << ta_beta << endl;
+      cout << "tb_beta -- " << tb_beta << endl;
       sgbeta2[ell] = (1 / randg<double>(distr_param(ta_beta, 1/tb_beta)));
       
       // ----------------------- //
@@ -1875,8 +1875,8 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
       for (int k = 0; k < K[ell]; k++) {
         double at = as<mat>(a[ell])[k] + as<mat>(Delta[ell])[k];
         double bt = as<mat>(b[ell])[k] + (1 - as<mat>(Delta[ell])[k]);
-        // cout << "at -- " << at << endl;
-        // cout << "bt -- " << bt << endl;
+        cout << "at -- " << at << endl;
+        cout << "bt -- " << bt << endl;
         mat omega_ell = as<mat>(omega[ell]);
         
         omega_ell[k] = R::rbeta(at,bt);
@@ -1913,8 +1913,8 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
     mat missing_status = U;
     missing_status = missing_status * 0 + 1;
     
-    // cout << iter << endl;
-    // cout << "Start imputation ..." << endl;
+    cout << iter << endl;
+    cout << "Start imputation ..." << endl;
     if(missing_method == "MIDAS") {
       if(fast_impute) {
         if(iter <= 1) {
@@ -1938,8 +1938,8 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
         U = cppmissForest(U);
       }
     }
-    // cout << U << endl;
-    // cout << "End imputation ..." << endl;
+    cout << U << endl;
+    cout << "End imputation ..." << endl;
 
     // MVL
     // split for MVL
@@ -1997,7 +1997,7 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
       mat U_ell = U_est.row(ell);
       U_ell = U_ell.elem(find_finite(U_ell));
       current_omega = 1 / (1 + exp(- U_ell - u0));
-      // cout << "current_omega" << current_omega << endl;
+      cout << "current_omega" << current_omega << endl;
       omega[ell] = (current_omega);
     }
     if(iter >= (int)burnin){
