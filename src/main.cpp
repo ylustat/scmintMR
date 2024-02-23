@@ -351,12 +351,11 @@ List VarCompTest_cpp(const arma::vec y, const arma::mat Z) {
   mat X1 = ones<vec>(Z.n_rows);
   mat W_1 = Z.t() * Z - (Z.t() * X1) * inv(X1.t() * X1) * (X1.t() * Z);
   
-  // Placeholder for calling SKAT::Get_Davies_PVal or equivalent
-  List out = Get_Davies_PVal(Q,W_1); // Needs replacement with the actual call or computation
+  // // Placeholder for calling SKAT::Get_Davies_PVal or equivalent
+  // List out = Get_Davies_PVal(Q,W_1); // Needs replacement with the actual call or computation
   
   return List::create(Named("Q") = Q,
-                      Named("W") = W_1,
-                      Named("P") = out["p.value"]);
+                      Named("W") = W_1);
 }
 
 // // [[Rcpp::export]]
@@ -1467,7 +1466,6 @@ List mintMR_single_omics_supervised(const List gammah, const List Gammah,
           as<List>(muRes[ell])[l] = mu[ell];
           as<List>(QRes[ell])[l] = VarCompTest_out["Q"];
           as<List>(WRes[ell])[l] = VarCompTest_out["W"];
-          as<List>(PRes[ell])[l] = VarCompTest_out["P"];
         }
       }
     }
@@ -1896,7 +1894,6 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
           as<List>(muRes[ell])[l] = mu[ell];
           as<List>(QRes[ell])[l] = VarCompTest_out["Q"];
           as<List>(WRes[ell])[l] = VarCompTest_out["W"];
-          as<List>(PRes[ell])[l] = VarCompTest_out["P"];
         }
       }
     }
