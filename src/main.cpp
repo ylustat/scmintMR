@@ -1875,8 +1875,6 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
       for (int k = 0; k < K[ell]; k++) {
         double at = as<mat>(a[ell])[k] + as<mat>(Delta[ell])[k];
         double bt = as<mat>(b[ell])[k] + (1 - as<mat>(Delta[ell])[k]);
-        cout << "at -- " << at << endl;
-        cout << "bt -- " << bt << endl;
         mat omega_ell = as<mat>(omega[ell]);
         
         omega_ell[k] = R::rbeta(at,bt);
@@ -1914,6 +1912,7 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
     missing_status = missing_status * 0 + 1;
     
     cout << iter << endl;
+    cout << "U -- " << U << endl;
     cout << "Start imputation ..." << endl;
     if(missing_method == "MIDAS") {
       if(fast_impute) {
@@ -1938,8 +1937,8 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
         U = cppmissForest(U);
       }
     }
-    cout << U << endl;
     cout << "End imputation ..." << endl;
+    cout << "U -- " << U << endl;
 
     // MVL
     // split for MVL
