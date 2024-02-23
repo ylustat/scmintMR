@@ -33,7 +33,7 @@ cppmissForest <- function(gammah) {
     .Call(`_scmintMR_cppmissForest`, gammah)
 }
 
-mintMR_Impute_MVL <- function(gammah, Gammah, se1, se2, corr_mat, group, opts, Lambda, display_progress = TRUE, latent_dim = 2L, CC = 2L, PC1 = 1L, PC2 = 1L, missing_method = "missForest", mvl_method = "DVCCA", epochs = 5L, fast_impute = TRUE) {
+mintMR_Impute_MVL <- function(gammah, Gammah, se1, se2, corr_mat, group, opts, Lambda, display_progress = TRUE, latent_dim = 2L, CC = 2L, PC1 = 1L, PC2 = 1L, missing_method = "missForest", mvl_method = "DVCCA", epochs = 5L, fast_impute = FALSE) {
     .Call(`_scmintMR_mintMR_Impute_MVL`, gammah, Gammah, se1, se2, corr_mat, group, opts, Lambda, display_progress, latent_dim, CC, PC1, PC2, missing_method, mvl_method, epochs, fast_impute)
 }
 
