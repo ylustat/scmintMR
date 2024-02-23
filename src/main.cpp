@@ -1865,9 +1865,11 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
       double ta_beta = a_beta[ell] + K[ell] / 2;
       double tb_beta = b_beta[ell] + accu(as<mat>(beta0[ell])%as<mat>(beta0[ell]))/2;
       // // sgbeta2[ell] = tb_beta/(ta_beta - 1);
+      
       cout << "ta_beta -- " << ta_beta << endl;
       cout << "tb_beta -- " << tb_beta << endl;
-      sgbeta2[ell] = (1 / randg<double>(distr_param(ta_beta, 1/tb_beta)));
+      sgbeta2[ell] = tb_beta/ta_beta;
+      // sgbeta2[ell] = (1 / randg<double>(distr_param(ta_beta, 1/tb_beta)));
       
       // ----------------------- //
       // Update omega
