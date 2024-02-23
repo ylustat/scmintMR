@@ -2099,6 +2099,6 @@ List mintMR(List gammah, const List Gammah,
   // return summary;
   return List::create(Named("Pvalue") = summary["Pvalue"],
                       Named("Estimate") = summary["Estimate"],
-                                                 Named("VCP") = VCP,   
+                                                 Named("VCP") = VCP,
                                                  Named("res") = res);
 }
