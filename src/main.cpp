@@ -1536,7 +1536,7 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
                        String missing_method = "missForest", // Added parameter for missing value handling
                        String mvl_method = "DVCCA",
                        int epochs = 5,
-                       bool fast_impute = false) {
+                       bool fast_impute = true) {
   cout << "Now running mintMR_Impute_MVL ..." << endl;
 
   int L = gammah.length();
