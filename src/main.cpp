@@ -259,7 +259,7 @@ colvec ei(int i, int n) {
 arma::mat generate_transformation_indicator(const arma::mat gammah_elem) {
   // Vector to hold indices of columns that are not entirely NA
   uvec not_all_na_cols_indices;
-
+  
   // Iterate over each column to check for at least one finite value using find_finite
   for (unsigned int j = 0; j < gammah_elem.n_cols; ++j) {
     uvec finite_indices = find_finite(gammah_elem.col(j));
@@ -268,22 +268,22 @@ arma::mat generate_transformation_indicator(const arma::mat gammah_elem) {
       not_all_na_cols_indices.insert_rows(not_all_na_cols_indices.size(), uvec({j}));
     }
   }
-
+  
   // Create an indicator matrix with the appropriate size
   mat indicator = zeros<mat>(gammah_elem.n_cols, not_all_na_cols_indices.size());
-
+  
   // Fill the indicator matrix for each non-NA column
   for (size_t i = 0; i < not_all_na_cols_indices.size(); ++i) {
     indicator(not_all_na_cols_indices(i), i) = 1;
   }
-
+  
   // Assign NA to rows that are all zeros
   for (unsigned int i = 0; i < indicator.n_rows; ++i) {
     if (accu(indicator.row(i)) == 0) {
       indicator.row(i).fill(datum::nan); // Fill the row with NA values
     }
   }
-
+  
   return indicator;
 }
 
@@ -291,7 +291,7 @@ arma::mat generate_transformation_indicator(const arma::mat gammah_elem) {
 arma::mat keep_nonmissing_column(const arma::mat X) {
   // Initialize a vector to store indices of non-missing columns
   uvec non_missing_cols;
-
+  
   for (unsigned int j = 0; j < X.n_cols; ++j) {
     // Check if the column has any missing (NaN) values
     if (!X.col(j).has_nan()) {
@@ -299,7 +299,7 @@ arma::mat keep_nonmissing_column(const arma::mat X) {
       non_missing_cols.insert_rows(non_missing_cols.size(), uvec({j}));
     }
   }
-
+  
   // Use the indices to select non-missing columns
   return X.cols(non_missing_cols);
 }
@@ -669,7 +669,8 @@ List mintMR_multi_omics(const List gammah, const List Gammah,
       double ta_beta = a_beta[ell] + K / 2;
       double tb_beta = b_beta[ell] + accu(as<mat>(beta0[ell])%as<mat>(beta0[ell]))/2;
       // sgbeta2[ell] = tb_beta/(ta_beta - 1);
-      sgbeta2[ell] = (1 / randg<double>(distr_param(ta_beta, 1/tb_beta)));
+      // sgbeta2[ell] = (1 / randg<double>(distr_param(ta_beta, 1/tb_beta)));
+      sgbeta2[ell] = tb_beta/ta_beta;
       
       // ----------------------- //
       // Update omega
@@ -1534,9 +1535,9 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
                        String missing_method = "missForest", // Added parameter for missing value handling
                        String mvl_method = "DVCCA",
                        int epochs = 5,
-                       bool fast_impute = true) {
+                       bool fast_impute = false) {
   cout << "Now running mintMR_Impute_MVL ..." << endl;
-
+  
   int L = gammah.length();
   IntegerVector p(L);
   IntegerVector K(L);
@@ -1546,7 +1547,7 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
   }
   mat Lambda_Offdiag = Lambda;
   Lambda_Offdiag.diag().zeros();
-
+  
   List corr_mat_Offdiag(L);
   for (int i = 0; i < L; i++){
     mat matrix = as<mat>(corr_mat[i]);
@@ -1571,7 +1572,7 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
   }
   
   // ---------------------------------------- //
-
+  
   vec a_gamma = as<vec>(opts["a_gamma"]);
   vec b_gamma = as<vec>(opts["b_gamma"]);
   vec a_alpha = as<vec>(opts["a_alpha"]);
@@ -1610,7 +1611,7 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
     m0save[i] = mat(p[i], K[i], fill::ones) * 0.01;
     m1save[i] = mat(p[i], K[i], fill::ones) * 0.01;
   }
-
+  
   
   for (int ell = 0; ell < L; ell++) {
     beta0res[ell] = List(numsave);
@@ -1635,7 +1636,7 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
     }
   }
   
-
+  
   List sG2(L), sg2(L), invsG2(L), invsg2(L);
   for (int i = 0; i < L; i++) {
     sG2[i] = as<mat>(se2[i]) % as<mat>(se2[i]);
@@ -1712,7 +1713,7 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
     for (ell = 0; ell < L; ell++) {
       vec invsgga2 = 1. / as<vec>(sgga2[ell]);
       vec invsgal2xi2 = 1. / sgal2xi2;
-
+      
       // ----------------------- //
       // Parameters for Gamma
       // ----------------------- //
@@ -1725,12 +1726,17 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
         mut1 = mut1 - Lambda(0,lam_k1[0]+1) * diagmat(1 / as<mat>(se1[ell]).col(k1)) * as<mat>(corr_mat[ell]) * diagmat(1 / as<mat>(se2[ell])) * as<mat>(mu[ell]).col(k1);
       }
       mut1 = v0t * mut1;
+      // cout << "v0t" << endl;
+      // cout << v0t << endl;
+      // cout << "invsgal2xi2" << endl;
+      // cout << invsgal2xi2 << endl;
+      
       mat mut_ell = mvnrnd(mut1, v0t);
       mut[ell] = mut_ell;
       // ----------------------- //
       // Parameters for gamma
       // ----------------------- //
-
+      
       for (int k = 0; k < K[ell]; k++) {
         uvec lam_k = find(as<mat>(transformation_indicator[ell]).col(k)==1);
         
@@ -1745,8 +1751,8 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
           mut1 = mut1 + Lambda(lam_k[0]+1,lam_k1[0]+1) * diagmat(1 / as<mat>(se1[ell]).col(k)) * diagmat(1 / as<mat>(se1[ell]).col(k1)) * as<mat>(gammah[ell]).col(k1);
           if(k1!=k){
             mut1 = mut1 - Lambda(lam_k[0]+1,lam_k1[0]+1) * 
-                                   diagmat(1 / as<mat>(se1[ell]).col(k)) * as<mat>(corr_mat[ell]) * 
-                                   diagmat(1 / as<mat>(se1[ell]).col(k1)) * as<mat>(mu[ell]).col(k1);
+              diagmat(1 / as<mat>(se1[ell]).col(k)) * as<mat>(corr_mat[ell]) * 
+              diagmat(1 / as<mat>(se1[ell]).col(k1)) * as<mat>(mu[ell]).col(k1);
           }
         }
         
@@ -1755,7 +1761,7 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
         mu_ell.col(k) = mvnrnd(mut1, v1t);
         mu[ell] = mu_ell;
       }
-
+      
       // ----------------------- //
       // Update Delta;
       // ----------------------- //
@@ -1803,7 +1809,6 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
         }
       }
       
-      // cout << "beta0_ell -- " << beta0_ell << endl;
       beta0[ell] = beta0_ell;
       // ----------------------- //
       // Update sigma_alpha;
@@ -1811,8 +1816,6 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
       double err0 = accu((as<mat>(mut[ell]) - sum(as<mat>(mu[ell]) * diagmat(as<mat>(Delta[ell]) % as<mat>(beta0[ell])),1)) % (as<mat>(mut[ell]) - sum(as<mat>(mu[ell]) * diagmat(as<mat>(Delta[ell]) % as<mat>(beta0[ell])),1)));
       double ta_alpha = a_alpha[ell] + p[ell] / 2;
       double tb_alpha = b_alpha[ell] + err0 / (2 * xi2[ell]);
-      // cout << "ta_alpha -- " << ta_alpha << endl;
-      // cout << "tb_alpha -- " << ta_alpha << endl;
       sgal2[ell] = 1 / randg<double>(distr_param(ta_alpha,1/tb_alpha));
       // ----------------------- //
       // Update xi2
@@ -1856,20 +1859,22 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
         sgga2_ell[k+K1] = sgga2_grp2;
       }
       sgga2[ell] = sgga2_ell;
-
+      
       // ----------------------- //
       // Update sgbeta2
       // ----------------------- //
       double ta_beta = a_beta[ell] + K[ell] / 2;
       double tb_beta = b_beta[ell] + accu(as<mat>(beta0[ell])%as<mat>(beta0[ell]))/2;
-      // sgbeta2[ell] = tb_beta/ta_beta;
-      
+      sgbeta2[ell] = tb_beta/ta_beta;
+      // cout << "beta -- " << as<mat>(beta0[ell]) << endl;
+      // cout << "a_beta -- " << a_beta << endl;
+      // cout << "b_beta -- " << b_beta << endl;
       // cout << "ta_beta -- " << ta_beta << endl;
       // cout << "tb_beta -- " << tb_beta << endl;
-      sgbeta2[ell] = (1 / randg<double>(distr_param(ta_beta, 1/tb_beta)));
-      if(sgbeta2[ell] > 1e2) {
-        sgbeta2[ell] = 1e2;
-      }
+      // sgbeta2[ell] = (1 / randg<double>(distr_param(ta_beta, 1/tb_beta)));
+      // if(sgbeta2[ell] > 1e2) {
+      //   sgbeta2[ell] = 1e2;
+      // }
       // ----------------------- //
       // Update omega
       // ----------------------- //
@@ -1906,14 +1911,12 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
     mat U = log(alpha_all / (1 - alpha_all)) - u0;
     U = up_truncate_matrix(U);
     U = low_truncate_matrix(U);
-
+    
     // impute
     mat missing_status = U;
     missing_status = missing_status * 0 + 1;
-    
-    // cout << iter << endl;
-    // cout << "U -- " << U << endl;
-    // cout << "Start imputation ..." << endl;
+
+    // cout << missing_status << endl;
     if(missing_method == "MIDAS") {
       if(fast_impute) {
         if(iter <= 1) {
@@ -1939,56 +1942,59 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
     }
     // cout << "End imputation ..." << endl;
     // cout << "U -- " << U << endl;
-
+    
     // MVL
     // split for MVL
     mat U1 = U.cols(as<uvec>(group[0]) - 1);
     mat U2 = U.cols(as<uvec>(group[1]) - 1);
-    if (mvl_method == "CCAPCA"){
-      List ccas = Rcpp::as<List>(cc(U1, U2));
-      mat Ahat = ccas["xcoef"];
-      mat Bhat = ccas["ycoef"];
-      mat XX = U1 * Ahat;
-      mat YY = U2 * Bhat;
-      mat X_est1 = XX.cols(0, CC - 1) * pinv(Ahat.cols(0, CC - 1));
-      mat X_est2 = YY.cols(0, CC - 1) * pinv(Bhat.cols(0, CC - 1));
-      
-      mat X_res1 = U1 - X_est1;
-      mat X_res2 = U2 - X_est2;
-      mat U;
-      vec s;
-      mat V;
-      mat norm_U1 = normalize_mat(X_res1);
-      mat norm_U2 = normalize_mat(X_res2);
-      
-      mat colmean1 = mean(X_res1, 0);
-      mat colmean2 = mean(X_res2, 0);
-      mat sd1 = stddev(X_res1, 0, 0);
-      mat sd2 = stddev(X_res2, 0, 0);
-      
-      svd(U, s, V, norm_U1);
-      mat X_red1 = U.cols(0, PC1 - 1) * diagmat(s.subvec(0, PC1 - 1)) * trans(V.cols(0, PC1 - 1));
-      
-      svd(U, s, V, normalize_mat(X_res2));
-      mat X_red2 = U.cols(0, PC2 - 1) * diagmat(s.subvec(0, PC2 - 1)) * trans(V.cols(0, PC2 - 1));
-      
-      X_red1 = X_red1 * diagmat(sd1);
-      for (int j = 0; j < X_red1.n_cols; j++) {
-        X_red1.col(j) += colmean1[j];
+    if((iter) % thin == 0){
+      if (mvl_method == "CCAPCA"){
+        List ccas = Rcpp::as<List>(cc(U1, U2));
+        mat Ahat = ccas["xcoef"];
+        mat Bhat = ccas["ycoef"];
+        mat XX = U1 * Ahat;
+        mat YY = U2 * Bhat;
+        mat X_est1 = XX.cols(0, CC - 1) * pinv(Ahat.cols(0, CC - 1));
+        mat X_est2 = YY.cols(0, CC - 1) * pinv(Bhat.cols(0, CC - 1));
+        
+        mat X_res1 = U1 - X_est1;
+        mat X_res2 = U2 - X_est2;
+        mat U;
+        vec s;
+        mat V;
+        mat norm_U1 = normalize_mat(X_res1);
+        mat norm_U2 = normalize_mat(X_res2);
+        
+        mat colmean1 = mean(X_res1, 0);
+        mat colmean2 = mean(X_res2, 0);
+        mat sd1 = stddev(X_res1, 0, 0);
+        mat sd2 = stddev(X_res2, 0, 0);
+        
+        svd(U, s, V, norm_U1);
+        mat X_red1 = U.cols(0, PC1 - 1) * diagmat(s.subvec(0, PC1 - 1)) * trans(V.cols(0, PC1 - 1));
+        
+        svd(U, s, V, normalize_mat(X_res2));
+        mat X_red2 = U.cols(0, PC2 - 1) * diagmat(s.subvec(0, PC2 - 1)) * trans(V.cols(0, PC2 - 1));
+        
+        X_red1 = X_red1 * diagmat(sd1);
+        for (int j = 0; j < X_red1.n_cols; j++) {
+          X_red1.col(j) += colmean1[j];
+        }
+        X_red2 = X_red2 * diagmat(sd2);
+        for (int j = 0; j < X_red2.n_cols; j++) {
+          X_red2.col(j) += colmean2[j];
+        }
+        
+        U1 = X_est1 + X_red1;
+        U2 = X_est2 + X_red2;
+      } else {
+        List res = DeepCCA(U1, U2, Named("method") = mvl_method, Named("LATENT_DIMS") = latent_dim, Named("EPOCHS") = epochs, Named("nw") = 0);
+        U1 = as<mat>(res[0]);
+        U2 = as<mat>(res[1]);
       }
-      X_red2 = X_red2 * diagmat(sd2);
-      for (int j = 0; j < X_red2.n_cols; j++) {
-        X_red2.col(j) += colmean2[j];
-      }
-      
-      U1 = X_est1 + X_red1;
-      U2 = X_est2 + X_red2;
-    } else {
-      List res = DeepCCA(U1, U2, Named("method") = mvl_method, Named("LATENT_DIMS") = latent_dim, Named("EPOCHS") = epochs, Named("nw") = 0);
-      U1 = as<mat>(res[0]);
-      U2 = as<mat>(res[1]);
     }
-
+    
+    
     mat U_est = join_rows(U1, U2);
     U_est = U_est % missing_status;
     for (int ell = 0; ell < L; ell++) {
@@ -2036,11 +2042,13 @@ List mintMR(List gammah, const List Gammah,
             bool display_progress = true,
             String missing_method = "missForest",
             String mvl_method = "DVCCA",
-            int epochs = 5) {
+            int epochs = 5,
+            bool fast_impute = false,
+            bool deep = true) {
   int L = gammah.size();
   List corr_mat_list(L), opts_list(L);
   bool overlapped = Lambda.isNotNull();
-  bool missingness;
+  bool missingness = false;
   
   if (accu(check_missing(gammah)) > 0){
     missingness = true;
@@ -2070,7 +2078,7 @@ List mintMR(List gammah, const List Gammah,
     int n = as<mat>(gammah[0]).n_cols;
     lambda_mat = eye<mat>(n+1, n+1);
   }
-  if(!missingness){
+  if(!missingness && !deep){
     if(reference.isNull()){
       if(group.isNull()){
         res= mintMR_single_omics(gammah, Gammah, se1, se2, corr_mat_list, opts_list, lambda_mat, display_progress, PC1);
@@ -2083,17 +2091,15 @@ List mintMR(List gammah, const List Gammah,
       res = mintMR_single_omics_supervised(gammah, Gammah, se1, se2, reference_m, corr_mat_list, opts_list, lambda_mat, display_progress, PC1);
     }
   } else {
-    if(missingness){
-      if(!group.isNull()){
-        group_list = as<List>(group.get());
-        res = mintMR_Impute_MVL(gammah, Gammah, se1, se2, corr_mat_list, group_list, 
-                                opts_list, lambda_mat, display_progress, 
-                                latent_dim, CC, PC1, PC2, missing_method, mvl_method, epochs);
-      }
+    if(!group.isNull()){
+      group_list = as<List>(group.get());
+      res = mintMR_Impute_MVL(gammah, Gammah, se1, se2, corr_mat_list, group_list, 
+                              opts_list, lambda_mat, display_progress, 
+                              latent_dim, CC, PC1, PC2, missing_method, mvl_method, epochs, fast_impute);
     }
   }
-
-
+  
+  
   List VCP = vc_test(res);
   List summary = summarize_result(res);
   // return summary;
