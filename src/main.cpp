@@ -1988,8 +1988,8 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
         U1 = X_est1 + X_red1;
         U2 = X_est2 + X_red2;
         
-        U1 = X_est1;
-        U2 = X_est2;
+        // U1 = X_est1;
+        // U2 = X_est2;
       } else {
         List res = DeepCCA(U1, U2, Named("method") = mvl_method, Named("LATENT_DIMS") = latent_dim, Named("EPOCHS") = epochs, Named("nw") = 0);
         U1 = as<mat>(res[0]);
