@@ -1919,7 +1919,7 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
     // cout << missing_status << endl;
     if(missing_method == "MIDAS") {
       if(fast_impute) {
-        if(iter <= 1) {
+        if(iter % thin == 0) {
           U = cppMIDAS(U);
           U_complete = U;
         } else {
@@ -1930,7 +1930,7 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
       }
     } else if (missing_method == "missForest") {
       if(fast_impute) {
-        if(iter <= 1) {
+        if(iter % thin == 0) {
           U = cppmissForest(U);
           U_complete = U;
         } else {
@@ -1985,11 +1985,11 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
           X_red2.col(j) += colmean2[j];
         }
         
-        U1 = X_est1 + X_red1;
-        U2 = X_est2 + X_red2;
+        // U1 = X_est1 + X_red1;
+        // U2 = X_est2 + X_red2;
         
-        // U1 = X_est1;
-        // U2 = X_est2;
+        U1 = X_est1;
+        U2 = X_est2;
       } else {
         List res = DeepCCA(U1, U2, Named("method") = mvl_method, Named("LATENT_DIMS") = latent_dim, Named("EPOCHS") = epochs, Named("nw") = 0);
         U1 = as<mat>(res[0]);
