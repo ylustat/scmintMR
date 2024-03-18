@@ -90,17 +90,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// cppMIDAS
-arma::mat cppMIDAS(arma::mat gammah);
-RcppExport SEXP _scmintMR_cppMIDAS(SEXP gammahSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type gammah(gammahSEXP);
-    rcpp_result_gen = Rcpp::wrap(cppMIDAS(gammah));
-    return rcpp_result_gen;
-END_RCPP
-}
 // cppmissForest
 arma::mat cppmissForest(arma::mat gammah);
 RcppExport SEXP _scmintMR_cppmissForest(SEXP gammahSEXP) {
@@ -176,7 +165,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_scmintMR_keep_nonmissing_column", (DL_FUNC) &_scmintMR_keep_nonmissing_column, 1},
     {"_scmintMR_spca", (DL_FUNC) &_scmintMR_spca, 2},
     {"_scmintMR_VarCompTest_cpp", (DL_FUNC) &_scmintMR_VarCompTest_cpp, 2},
-    {"_scmintMR_cppMIDAS", (DL_FUNC) &_scmintMR_cppMIDAS, 1},
     {"_scmintMR_cppmissForest", (DL_FUNC) &_scmintMR_cppmissForest, 1},
     {"_scmintMR_mintMR_Impute_MVL", (DL_FUNC) &_scmintMR_mintMR_Impute_MVL, 17},
     {"_scmintMR_mintMR", (DL_FUNC) &_scmintMR_mintMR, 19},

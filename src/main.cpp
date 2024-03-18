@@ -27,10 +27,10 @@ Function Get_Davies_PVal = pkg2["Get_Davies_PVal"];
 Environment pkg = Environment::namespace_env("CCA");
 Function cc = pkg["cc"];
 
-Environment pkgImp = Environment::namespace_env("rMIDAS");
-Function convert = pkgImp["convert"];
-Function train = pkgImp["train"];
-Function complete = pkgImp["complete"];
+// Environment pkgImp = Environment::namespace_env("rMIDAS");
+// Function convert = pkgImp["convert"];
+// Function train = pkgImp["train"];
+// Function complete = pkgImp["complete"];
 
 Environment pkgMF = Environment::namespace_env("missForest");
 Function missForest = pkgMF["missForest"];
@@ -41,7 +41,7 @@ Function datamatrix = pkgBase["data.matrix"];
 
 Environment pkgMVL = Environment::namespace_env("MVL");
 Function DeepCCA = pkgMVL["DeepCCA"];
-Function MIDAS = pkgMVL["MIDAS"];
+// Function MIDAS = pkgMVL["MIDAS"];
 Function fillNA = pkgMVL["fillNA"];
 Function fillmean = pkgMVL["fillmean"];
 Function vc_test = pkgMVL["variance_component_test"];
@@ -366,11 +366,11 @@ List VarCompTest_cpp(const arma::vec y, const arma::mat Z) {
 //   return(complete_data_mat);
 // }
 
-// [[Rcpp::export]]
-arma::mat cppMIDAS(arma::mat gammah){
-  mat complete_data_mat = as<mat>(MIDAS(gammah));
-  return(complete_data_mat);
-}
+// // [[Rcpp::export]]
+// arma::mat cppMIDAS(arma::mat gammah){
+//   mat complete_data_mat = as<mat>(MIDAS(gammah));
+//   return(complete_data_mat);
+// }
 
 // [[Rcpp::export]]
 arma::mat cppmissForest(arma::mat gammah){
@@ -1915,31 +1915,31 @@ List mintMR_Impute_MVL(List gammah, const List Gammah,
     // impute
     mat missing_status = U;
     missing_status = missing_status * 0 + 1;
-
-    // cout << missing_status << endl;
-    if(missing_method == "MIDAS") {
-      if(fast_impute) {
-        if(iter % thin == 0) {
-          U = cppMIDAS(U);
-          U_complete = U;
-        } else {
-          U = as<mat>(fillNA(U,U_complete));
-        }
-      } else {
-        U = cppMIDAS(U);
-      }
-    } else if (missing_method == "missForest") {
-      if(fast_impute) {
-        if(iter % thin == 0) {
-          U = cppmissForest(U);
-          U_complete = U;
-        } else {
-          U = as<mat>(fillNA(U,U_complete));
-        }
-      } else {
+    
+    // // cout << missing_status << endl;
+    // if(missing_method == "MIDAS") {
+    //   if(fast_impute) {
+    //     if(iter % thin == 0) {
+    //       U = cppMIDAS(U);
+    //       U_complete = U;
+    //     } else {
+    //       U = as<mat>(fillNA(U,U_complete));
+    //     }
+    //   } else {
+    //     U = cppMIDAS(U);
+    //   }
+    // } else if (missing_method == "missForest") {
+    if(fast_impute) {
+      if(iter % thin == 0) {
         U = cppmissForest(U);
+        U_complete = U;
+      } else {
+        U = as<mat>(fillNA(U,U_complete));
       }
+    } else {
+      U = cppmissForest(U);
     }
+    // }
     // cout << "End imputation ..." << endl;
     // cout << "U -- " << U << endl;
     

@@ -25,10 +25,6 @@ VarCompTest_cpp <- function(y, Z) {
     .Call(`_scmintMR_VarCompTest_cpp`, y, Z)
 }
 
-cppMIDAS <- function(gammah) {
-    .Call(`_scmintMR_cppMIDAS`, gammah)
-}
-
 cppmissForest <- function(gammah) {
     .Call(`_scmintMR_cppmissForest`, gammah)
 }
